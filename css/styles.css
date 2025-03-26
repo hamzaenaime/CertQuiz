@@ -1,0 +1,388 @@
+/* Salesforce Data Architect Quiz Styles */
+
+/* Basic Styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    color: #333;
+    background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.app-title {
+    text-align: center;
+    color: #1a1a1a;
+    margin-bottom: 30px;
+    font-size: 2em;
+}
+
+.app-title span {
+    color: #007bff;
+    font-weight: bold;
+}
+
+#quiz-container {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    padding: 35px;
+    width: 90%;
+    max-width: 700px;
+    text-align: left;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+#question-container {
+    margin-bottom: 25px;
+}
+
+#question {
+    font-size: 1.4em;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #1a1a1a;
+    line-height: 1.4;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.quiz-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+#quiz-progress {
+    font-weight: bold;
+}
+
+#multi-select-hint {
+    font-style: italic;
+    margin-bottom: 15px;
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+#answers {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#answers li {
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#answers li:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+    transform: translateY(-2px);
+}
+
+#answers li.selected {
+    background-color: #e3f2fd;
+    border-color: #007bff;
+}
+
+#answers li input[type="checkbox"],
+#answers li input[type="radio"] {
+    position: relative;
+    opacity: 1;
+    height: auto;
+    width: auto;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+#answers li label {
+    cursor: pointer;
+    display: inline-block;
+    width: calc(100% - 30px);
+    vertical-align: middle;
+    font-size: 1.05em;
+    user-select: none;
+}
+
+/* Correct/incorrect answer indicators */
+#answers li.correct {
+    background-color: #d4edda;
+    border-color: #28a745;
+}
+
+#answers li.incorrect {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+}
+
+/* User selected answer indicator */
+#answers li.user-selected {
+    font-weight: bold;
+}
+
+/* When answer is both selected and correct */
+#answers li.user-selected.correct:after {
+    content: " ✓";
+    color: #28a745;
+    font-weight: bold;
+    float: right;
+}
+
+/* When answer is selected but incorrect */
+#answers li.user-selected.incorrect:after {
+    content: " ✗";
+    color: #dc3545;
+    font-weight: bold;
+    float: right;
+}
+
+/* When answer is correct but not selected */
+#answers li.correct:not(.user-selected):after {
+    content: " ✓";
+    color: #28a745;
+    font-weight: bold;
+    float: right;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+
+#submit-btn,
+.nav-btn,
+.retry-btn,
+.review-btn {
+    padding: 12px 25px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    text-decoration: none;
+    min-width: 120px;
+}
+
+#submit-btn.reveal-active {
+    background-color: #28a745;
+}
+
+.nav-btn {
+    background-color: #6c757d;
+}
+
+.nav-btn.submit-quiz {
+    background-color: #28a745;
+    font-weight: bold;
+}
+
+.nav-btn.submit-quiz:hover {
+    background-color: #218838;
+}
+
+#submit-btn:hover,
+.nav-btn:hover,
+.retry-btn:hover,
+.review-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#submit-btn:disabled,
+.nav-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Results styling */
+#results-container {
+    display: none;
+    text-align: center;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 700px;
+}
+
+#results-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+.score-display {
+    font-size: 1.8em;
+    margin: 20px 0;
+    font-weight: bold;
+}
+
+.score-circle {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    margin: 0 auto 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+}
+
+.score-circle::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border-radius: 50%;
+    background-color: white;
+}
+
+.score-value {
+    position: relative;
+    z-index: 2;
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.results-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.retry-btn, .review-btn {
+    flex: 1;
+    max-width: 200px;
+}
+
+/* Review section styling */
+#review-container {
+    display: none;
+    width: 90%;
+    max-width: 700px;
+}
+
+.review-question {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.review-question h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 10px;
+}
+
+.review-answers {
+    margin-bottom: 15px;
+}
+
+.review-answer {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+}
+
+.review-answer.correct {
+    background-color: #d4edda;
+    border-left: 4px solid #28a745;
+}
+
+.review-answer.incorrect {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+}
+
+.review-answer.user-selected {
+    font-weight: bold;
+}
+
+.explanation {
+    background-color: #e9ecef;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-style: italic;
+}
+
+/* Answer explanation styles */
+#answer-explanation {
+    background-color: #e9ecef;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    display: none;
+}
+
+#answer-explanation.visible {
+    display: block;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #quiz-container, #results-container, #review-container {
+        width: 95%;
+        padding: 20px;
+    }
+    
+    .button-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .nav-btn, #submit-btn {
+        width: 100%;
+    }
+    
+    .results-buttons {
+        flex-direction: column;
+    }
+    
+    .retry-btn, .review-btn {
+        max-width: none;
+    }
+}
