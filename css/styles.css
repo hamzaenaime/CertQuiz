@@ -364,25 +364,163 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    body {
+        font-size: 0.9em; /* Reduced base font size for mobile */
+        padding: 10px 0;
+    }
+    
     #quiz-container, #results-container, #review-container {
         width: 95%;
-        padding: 20px;
+        padding: 15px;
+        margin: 10px auto;
+        border-radius: 8px;
+    }
+    
+    .app-title {
+        font-size: 1.6em;
+        margin-bottom: 15px;
+    }
+    
+    #question {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+    }
+    
+    #answers li {
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 6px;
+        border-width: 1px;
+    }
+    
+    #answers li label {
+        font-size: 0.95em;
+    }
+    
+    .quiz-meta {
+        font-size: 0.8em;
+        margin-bottom: 15px;
+    }
+    
+    #multi-select-hint {
+        font-size: 0.8em;
+    }
+    
+    #answer-explanation {
+        padding: 12px;
+        font-size: 0.9em;
     }
     
     .button-container {
-        flex-direction: column;
-        gap: 10px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 15px;
     }
     
     .nav-btn, #submit-btn {
-        width: 100%;
+        padding: 10px 15px;
+        font-size: 0.9em;
+        min-width: auto;
+        flex: 1;
+    }
+    
+    /* Improved button positioning for mobile */
+    #nav-prev {
+        order: 1;
+        flex-basis: 30%;
+    }
+    
+    #submit-btn {
+        order: 3;
+        flex-basis: 100%;
+        margin-top: 8px;
+    }
+    
+    #nav-next {
+        order: 2;
+        flex-basis: 30%;
+    }
+    
+    /* Results container adjustments */
+    #results-container h2 {
+        font-size: 1.5em;
+    }
+    
+    .score-display {
+        font-size: 1.4em;
+    }
+    
+    .score-circle {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .score-value {
+        font-size: 2em;
     }
     
     .results-buttons {
         flex-direction: column;
+        gap: 10px;
     }
     
     .retry-btn, .review-btn {
         max-width: none;
+        padding: 12px;
+    }
+    
+    /* Review container adjustments */
+    .review-question {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .review-question h3 {
+        font-size: 1.1em;
+    }
+    
+    .review-answer {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+    
+    .explanation {
+        padding: 10px;
+        font-size: 0.85em;
+    }
+}
+
+/* Additional adjustments for very small screens */
+@media (max-width: 400px) {
+    body {
+        font-size: 0.85em;
+    }
+    
+    #quiz-container, #results-container, #review-container {
+        width: 98%;
+        padding: 12px;
+    }
+    
+    .app-title {
+        font-size: 1.4em;
+    }
+    
+    #question {
+        font-size: 1.1em;
+    }
+    
+    .button-container {
+        margin-top: 12px;
+    }
+    
+    .nav-btn, #submit-btn {
+        padding: 8px 12px;
+        font-size: 0.85em;
+    }
+    
+    #answers li {
+        padding: 8px;
     }
 }
