@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initializeQuiz() {
     // Select random questions from the full quiz data (15 questions)
-    quizQuestions = getRandomQuestions(quizData, 30);
+    quizQuestions = getRandomQuestions(quizData, 15);
     
     // Reset state variables
     currentQuestionIndex = 0;
