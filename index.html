@@ -16,7 +16,26 @@
     </style>
 </head>
 <body>
-    <div id="quiz-container">
+    <div id="setup-container" class="fade-in">
+        <h1 class="app-title">Salesforce <span>Data Architect</span> Quiz</h1>
+        
+        <div class="setup-content">
+            <p class="setup-description">Customize your quiz experience by selecting the number of questions you'd like to answer.</p>
+            
+            <div class="question-count-selector">
+                <label for="question-count">Number of Questions:</label>
+                <div class="range-container">
+                    <input type="range" id="question-count" min="1" max="60" value="15" class="slider">
+                    <div id="question-count-value">15</div>
+                </div>
+                <div class="time-estimate">Estimated time: <span id="time-estimate">15</span> minutes</div>
+            </div>
+            
+            <button id="start-quiz-btn" class="start-btn">Start Quiz</button>
+        </div>
+    </div>
+
+    <div id="quiz-container" style="display: none;">
         <h1 class="app-title">Salesforce <span>Data Architect</span> Quiz</h1>
         
         <div class="quiz-meta">

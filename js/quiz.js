@@ -10,12 +10,19 @@ let currentQuestionIndex = 0;
 let score = 0;
 let userAnswers = [];
 let incorrectQuestions = [];
-let revealedAnswers = Array(quizData.length).fill(false); // Track revealed answers
-let quizQuestions = []; // Will hold the 15 randomly selected questions
+let revealedAnswers = [];
+let quizQuestions = []; // Will hold the selected questions
 let timer;
-let timeLeft = 30 * 60; // 30 minutes in seconds
+let timeLeft = 0; // Will be set based on number of questions
+let questionCount = 15; // Default question count
 
 // DOM elements
+const setupContainer = document.getElementById('setup-container');
+const questionCountInput = document.getElementById('question-count');
+const questionCountValue = document.getElementById('question-count-value');
+const timeEstimate = document.getElementById('time-estimate');
+const startQuizBtn = document.getElementById('start-quiz-btn');
+
 const quizContainer = document.getElementById('quiz-container');
 const questionContainer = document.getElementById('question-container');
 const questionEl = document.getElementById('question');
@@ -31,29 +38,77 @@ const answerExplanationEl = document.getElementById('answer-explanation');
 const timerDisplay = document.getElementById('timer');
 
 /**
- * Initialize the quiz when page loads
+ * Initialize the app when page loads
  */
 document.addEventListener('DOMContentLoaded', function() {
-    initializeQuiz();
+    setupQuizConfig();
 });
+
+/**
+ * Set up the quiz configuration screen
+ */
+function setupQuizConfig() {
+    // Set up slider for question count
+    if (questionCountInput && questionCountValue) {
+        // Set initial value
+        questionCountValue.textContent = questionCountInput.value;
+        
+        // Update time estimate (1 minute per question)
+        updateTimeEstimate(questionCountInput.value);
+        
+        // Update when slider changes
+        questionCountInput.addEventListener('input', function() {
+            questionCountValue.textContent = this.value;
+            updateTimeEstimate(this.value);
+        });
+    }
+    
+    // Set up start quiz button
+    if (startQuizBtn) {
+        startQuizBtn.addEventListener('click', function() {
+            // Get selected question count
+            questionCount = parseInt(questionCountInput.value, 10);
+            
+            // Hide setup screen
+            setupContainer.style.display = 'none';
+            
+            // Initialize and show quiz
+            initializeQuiz();
+        });
+    }
+}
+
+/**
+ * Update the time estimate based on question count
+ */
+function updateTimeEstimate(count) {
+    if (timeEstimate) {
+        // Calculate time (approximately 1 minute per question)
+        const estimatedMinutes = Math.max(Math.round(count * 1), 1);
+        timeEstimate.textContent = estimatedMinutes;
+    }
+}
 
 /**
  * Set up the quiz interface and load the first question
  */
 function initializeQuiz() {
-    // Select random questions from the full quiz data (15 questions)
-    quizQuestions = getRandomQuestions(quizData, 15);
+    // Select random questions from the full quiz data based on user's selection
+    quizQuestions = getRandomQuestions(quizData, questionCount);
     
     // Reset state variables
     currentQuestionIndex = 0;
     score = 0;
-    userAnswers = Array(quizQuestions.length).fill([]); // Initialize with empty arrays
+    userAnswers = Array(quizQuestions.length).fill([]);
     incorrectQuestions = [];
     revealedAnswers = Array(quizQuestions.length).fill(false);
-    timeLeft = 30 * 60; // Reset timer to 30 minutes
+    
+    // Set timer based on question count (approximately 2 minutes per question)
+    timeLeft = questionCount * 120;
     
     // Show the quiz container, hide results and review
     quizContainer.style.display = 'block';
+    quizContainer.classList.add('fade-in');
     resultsContainer.style.display = 'none';
     if (reviewContainer) reviewContainer.style.display = 'none';
     
@@ -416,12 +471,16 @@ function checkAnswerCorrectness() {
  * Show the results screen
  */
 function showResults() {
+    // Stop the timer
+    clearInterval(timer);
+    
     // Recalculate score based on incorrectQuestions
     score = quizQuestions.length - incorrectQuestions.length;
     
     // Hide quiz container and show results
     quizContainer.style.display = 'none';
     resultsContainer.style.display = 'block';
+    resultsContainer.classList.add('fade-in');
     if (reviewContainer) reviewContainer.style.display = 'none';
     
     // Calculate percentage
@@ -457,7 +516,10 @@ function showResults() {
     
     // Add event listeners to buttons
     document.getElementById('retry-btn').addEventListener('click', () => {
-        location.reload(); // Simple way to restart the quiz
+        // Return to setup screen instead of reloading the page
+        resultsContainer.style.display = 'none';
+        setupContainer.style.display = 'block';
+        setupContainer.classList.add('fade-in');
     });
     
     document.getElementById('review-btn').addEventListener('click', showReview);
@@ -479,6 +541,7 @@ function showReview() {
     }
     
     reviewContainer.style.display = 'block';
+    reviewContainer.classList.add('fade-in');
     
     // Build HTML for review
     let reviewHTML = `
@@ -514,7 +577,7 @@ function showReview() {
     reviewHTML += `
         <div class="results-buttons">
             <button class="nav-btn" id="back-to-results">Back to Results</button>
-            <button class="retry-btn" id="retry-from-review">Retry Quiz</button>
+            <button class="retry-btn" id="retry-from-review">Setup New Quiz</button>
         </div>
     `;
     
@@ -524,10 +587,13 @@ function showReview() {
     document.getElementById('back-to-results').addEventListener('click', () => {
         reviewContainer.style.display = 'none';
         resultsContainer.style.display = 'block';
+        resultsContainer.classList.add('fade-in');
     });
     
     document.getElementById('retry-from-review').addEventListener('click', () => {
-        location.reload(); // Simple way to restart the quiz
+        reviewContainer.style.display = 'none';
+        setupContainer.style.display = 'block';
+        setupContainer.classList.add('fade-in');
     });
 }
 
@@ -592,11 +658,13 @@ function buildReviewQuestionHTML(questionIndex) {
     return html;
 }
 
-// Export public functions
-export { initializeQuiz };
-
-// Function to randomly select questions
+/**
+ * Function to randomly select questions
+ */
 function getRandomQuestions(allQuestions, count) {
+    // Ensure count is within bounds
+    count = Math.min(Math.max(count, 1), allQuestions.length);
+    
     // Clone the array to avoid modifying the original
     const questions = [...allQuestions];
     
@@ -633,5 +701,5 @@ function startTimer() {
     }, 1000);
 }
 
-// Initialize the quiz when the page loads
-window.addEventListener('DOMContentLoaded', initializeQuiz);
+// Export public functions if needed
+export { initializeQuiz };
