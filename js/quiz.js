@@ -2,9 +2,6 @@
  * Salesforce Data Architect Quiz Application
  */
 
-// Import quiz data
-import { quizData } from '../data/quiz-data.js';
-
 // Main quiz state and variables
 let currentQuestionIndex = 0;
 let score = 0;
@@ -15,14 +12,18 @@ let quizQuestions = []; // Will hold the selected questions
 let timer;
 let timeLeft = 0; // Will be set based on number of questions
 let questionCount = 15; // Default question count
+let selectedQuizData = null; // Will hold the loaded quiz data
+let selectedTopic = null; // 'architect' or 'cloud'
 
 // DOM elements
+const topicSelectionContainer = document.getElementById('topic-selection-container');
+const topicArchitectBtn = document.getElementById('topic-architect');
+const topicCloudBtn = document.getElementById('topic-cloud');
 const setupContainer = document.getElementById('setup-container');
 const questionCountInput = document.getElementById('question-count');
 const questionCountValue = document.getElementById('question-count-value');
 const timeEstimate = document.getElementById('time-estimate');
 const startQuizBtn = document.getElementById('start-quiz-btn');
-
 const quizContainer = document.getElementById('quiz-container');
 const questionContainer = document.getElementById('question-container');
 const questionEl = document.getElementById('question');
@@ -32,17 +33,84 @@ const submitBtn = document.getElementById('submit-btn');
 const navPrevBtn = document.getElementById('nav-prev');
 const navNextBtn = document.getElementById('nav-next');
 const resultsContainer = document.getElementById('results-container');
-const reviewContainer = document.getElementById('review-container');
+let reviewContainer = document.getElementById('review-container');
 const progressEl = document.getElementById('quiz-progress');
 const answerExplanationEl = document.getElementById('answer-explanation');
 const timerDisplay = document.getElementById('timer');
+const quizTitleEls = document.querySelectorAll('.app-title');
 
 /**
  * Initialize the app when page loads
  */
 document.addEventListener('DOMContentLoaded', function() {
-    setupQuizConfig();
+    setupTopicSelection();
 });
+
+/**
+ * Set up the topic selection screen
+ */
+function setupTopicSelection() {
+    // Show topic selection, hide others
+    if (topicSelectionContainer) topicSelectionContainer.style.display = 'block';
+    if (setupContainer) setupContainer.style.display = 'none';
+    if (quizContainer) quizContainer.style.display = 'none';
+    if (resultsContainer) resultsContainer.style.display = 'none';
+    if (reviewContainer) reviewContainer.style.display = 'none';
+
+    // Add event listeners for topic buttons
+    if (topicArchitectBtn) {
+        topicArchitectBtn.addEventListener('click', function() {
+            selectedTopic = 'architect';
+            loadQuizData('architect');
+        });
+    }
+    if (topicCloudBtn) {
+        topicCloudBtn.addEventListener('click', function() {
+            selectedTopic = 'cloud';
+            loadQuizData('cloud');
+        });
+    }
+}
+
+/**
+ * Dynamically import the selected quiz data file
+ */
+function loadQuizData(topic) {
+    // Show loading state if needed
+    if (topicSelectionContainer) topicSelectionContainer.style.display = 'none';
+    if (setupContainer) setupContainer.style.display = 'block';
+    setupContainer.classList.add('fade-in');
+
+    // Update quiz title for setup screen
+    updateQuizTitle();
+
+    // Dynamically import the quiz data
+    let importPromise;
+    if (topic === 'architect') {
+        importPromise = import('../data/quiz-data.js');
+    } else if (topic === 'cloud') {
+        importPromise = import('../data/quiz-data-cloud.js');
+    }
+    importPromise.then(module => {
+        selectedQuizData = module.quizData;
+        setupQuizConfig();
+    });
+}
+
+/**
+ * Update the quiz title based on selected topic
+ */
+function updateQuizTitle() {
+    let title = 'Salesforce Quiz';
+    if (selectedTopic === 'architect') {
+        title = 'Salesforce <span>Data Architect</span> Quiz';
+    } else if (selectedTopic === 'cloud') {
+        title = 'Salesforce <span>Data Cloud</span> Quiz';
+    }
+    quizTitleEls.forEach(el => {
+        el.innerHTML = title;
+    });
+}
 
 /**
  * Set up the quiz configuration screen
@@ -93,8 +161,8 @@ function updateTimeEstimate(count) {
  * Set up the quiz interface and load the first question
  */
 function initializeQuiz() {
-    // Select random questions from the full quiz data based on user's selection
-    quizQuestions = getRandomQuestions(quizData, questionCount);
+    // Select random questions from the selected quiz data based on user's selection
+    quizQuestions = getRandomQuestions(selectedQuizData, questionCount);
     
     // Reset state variables
     currentQuestionIndex = 0;
@@ -127,6 +195,9 @@ function initializeQuiz() {
     submitBtn.textContent = "Reveal Answer";
     submitBtn.addEventListener('click', toggleAnswerReveal);
     submitBtn.disabled = false; // Always enable the reveal button
+    
+    // Update quiz title for quiz screen
+    updateQuizTitle();
     
     // Start the timer
     startTimer();
