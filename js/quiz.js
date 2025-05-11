@@ -268,6 +268,8 @@ function loadQuestion() {
                 
                 // Save user's selection immediately
                 saveUserAnswer();
+                // Check if required number of answers is selected
+                updateButtonStatesForRequiredAnswers();
             });
             
             const label = document.createElement('label');
@@ -300,6 +302,8 @@ function loadQuestion() {
                     
                     // Save user's selection immediately
                     saveUserAnswer();
+                    // Check if required number of answers is selected
+                    updateButtonStatesForRequiredAnswers();
                 }
             });
             
@@ -325,6 +329,8 @@ function loadQuestion() {
         void questionContainer.offsetWidth; // Trigger reflow
         questionContainer.classList.add('fade-in');
         
+        // Check if required number of answers is selected (initial state)
+        updateButtonStatesForRequiredAnswers();
     } else {
         // Should not happen if called correctly
         showResults();
@@ -770,6 +776,30 @@ function startTimer() {
             timeLeft--;
         }
     }, 1000);
+}
+
+/**
+ * Enable/disable Reveal Answer and Next buttons based on required selections
+ */
+function updateButtonStatesForRequiredAnswers() {
+    const currentQuestionData = quizQuestions[currentQuestionIndex];
+    const selected = userAnswers[currentQuestionIndex] || [];
+    let required = 1;
+    if (currentQuestionData.multiSelect) {
+        required = Array.isArray(currentQuestionData.correctAnswer)
+            ? currentQuestionData.correctAnswer.length : 1;
+    }
+    // Only enable if exactly the required number of answers is selected
+    const enable = selected.length === required;
+    // Only allow reveal/next if not already revealed
+    if (!revealedAnswers[currentQuestionIndex]) {
+        submitBtn.disabled = !enable;
+        navNextBtn.disabled = !enable || (currentQuestionIndex === quizQuestions.length - 1);
+    } else {
+        // If revealed, allow navigation
+        submitBtn.disabled = false;
+        navNextBtn.disabled = false;
+    }
 }
 
 // Export public functions if needed
