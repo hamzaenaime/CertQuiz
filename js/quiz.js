@@ -789,12 +789,21 @@ function updateButtonStatesForRequiredAnswers() {
         required = Array.isArray(currentQuestionData.correctAnswer)
             ? currentQuestionData.correctAnswer.length : 1;
     }
+    
     // Only enable if exactly the required number of answers is selected
     const enable = selected.length === required;
-    // Only allow reveal/next if not already revealed
+    
+    // Only allow reveal if not already revealed and has required selections
     if (!revealedAnswers[currentQuestionIndex]) {
         submitBtn.disabled = !enable;
-        navNextBtn.disabled = !enable || (currentQuestionIndex === quizQuestions.length - 1);
+        
+        // For the last question, always enable the "Submit Quiz" button if answers are selected
+        if (currentQuestionIndex === quizQuestions.length - 1) {
+            navNextBtn.disabled = !enable;
+        } else {
+            // For other questions, enable "Next" if required selections are made
+            navNextBtn.disabled = !enable;
+        }
     } else {
         // If revealed, allow navigation
         submitBtn.disabled = false;
