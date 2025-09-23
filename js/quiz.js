@@ -13,12 +13,13 @@ let timer;
 let timeLeft = 0; // Will be set based on number of questions
 let questionCount = 15; // Default question count
 let selectedQuizData = null; // Will hold the loaded quiz data
-let selectedTopic = null; // 'architect' or 'cloud'
+let selectedTopic = null; // 'architect', 'cloud', or 'integration'
 
 // DOM elements
 const topicSelectionContainer = document.getElementById('topic-selection-container');
 const topicArchitectBtn = document.getElementById('topic-architect');
 const topicCloudBtn = document.getElementById('topic-cloud');
+const topicIntegrationBtn = document.getElementById('topic-integration');
 const setupContainer = document.getElementById('setup-container');
 const questionCountInput = document.getElementById('question-count');
 const questionCountValue = document.getElementById('question-count-value');
@@ -70,6 +71,12 @@ function setupTopicSelection() {
             loadQuizData('cloud');
         });
     }
+    if (topicIntegrationBtn) {
+        topicIntegrationBtn.addEventListener('click', function() {
+            selectedTopic = 'integration';
+            loadQuizData('integration');
+        });
+    }
 }
 
 /**
@@ -90,6 +97,8 @@ function loadQuizData(topic) {
         importPromise = import('../data/quiz-data.js');
     } else if (topic === 'cloud') {
         importPromise = import('../data/quiz-data-cloud.js');
+    } else if (topic === 'integration') {
+        importPromise = import('../data/quiz-integration.js');
     }
     importPromise.then(module => {
         selectedQuizData = module.quizData;
@@ -106,6 +115,8 @@ function updateQuizTitle() {
         title = 'Salesforce <span>Data Architect</span> Quiz';
     } else if (selectedTopic === 'cloud') {
         title = 'Salesforce <span>Data Cloud</span> Quiz';
+    } else if (selectedTopic === 'integration') {
+        title = 'Salesforce <span>Integration</span> Quiz';
     }
     quizTitleEls.forEach(el => {
         el.innerHTML = title;

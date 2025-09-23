@@ -679,7 +679,7 @@ body {
 
 /* Topic selection styles */
 #topic-selection-container {
-  max-width: 420px;
+  max-width: 500px;
   margin: 60px auto 0 auto;
   background: #fff;
   border-radius: 18px;
@@ -691,20 +691,24 @@ body {
 .topic-buttons {
   display: flex;
   justify-content: center;
-  gap: 2rem;
+  gap: 1.2rem;
   margin-top: 2rem;
+  flex-wrap: wrap;
 }
 .topic-btn {
   background: linear-gradient(90deg, #4f8cff 0%, #1cb5e0 100%);
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   border: none;
   border-radius: 10px;
-  padding: 1.2rem 2.2rem;
+  padding: 1rem 1.8rem;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(79,140,255,0.10);
   transition: background 0.2s, transform 0.1s;
+  min-width: 140px;
+  flex: 1;
+  max-width: 180px;
 }
 .topic-btn:hover, .topic-btn:focus {
   background: linear-gradient(90deg, #1cb5e0 0%, #4f8cff 100%);
@@ -719,11 +723,27 @@ body {
   }
   .topic-buttons {
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 1rem;
   }
   .topic-btn {
     width: 100%;
     font-size: 1rem;
     padding: 1rem 0;
+    min-width: auto;
+    max-width: none;
+    flex: none;
+  }
+}
+
+/* Responsive for tablets */
+@media (max-width: 900px) and (min-width: 601px) {
+  .topic-buttons {
+    gap: 1rem;
+  }
+  .topic-btn {
+    font-size: 1rem;
+    padding: 0.9rem 1.5rem;
+    min-width: 120px;
+    max-width: 160px;
   }
 }
