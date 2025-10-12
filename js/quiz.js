@@ -7,6 +7,7 @@ let currentQuestionIndex = 0;
 let score = 0;
 let userAnswers = [];
 let incorrectQuestions = [];
+let skippedQuestions = []; // Track skipped questions
 let revealedAnswers = [];
 let quizQuestions = []; // Will hold the selected questions
 let timer;
@@ -20,6 +21,10 @@ const topicSelectionContainer = document.getElementById('topic-selection-contain
 const topicArchitectBtn = document.getElementById('topic-architect');
 const topicCloudBtn = document.getElementById('topic-cloud');
 const topicIntegrationBtn = document.getElementById('topic-integration');
+const integrationTypeContainer = document.getElementById('integration-type-container');
+const integrationMockBtn = document.getElementById('integration-mock');
+const integrationRealBtn = document.getElementById('integration-real');
+const backToTopicsBtn = document.getElementById('back-to-topics');
 const setupContainer = document.getElementById('setup-container');
 const questionCountInput = document.getElementById('question-count');
 const questionCountValue = document.getElementById('question-count-value');
@@ -31,6 +36,7 @@ const questionEl = document.getElementById('question');
 const answersEl = document.getElementById('answers');
 const multiSelectHintEl = document.getElementById('multi-select-hint');
 const submitBtn = document.getElementById('submit-btn');
+const skipBtn = document.getElementById('skip-btn');
 const navPrevBtn = document.getElementById('nav-prev');
 const navNextBtn = document.getElementById('nav-next');
 const resultsContainer = document.getElementById('results-container');
@@ -53,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function setupTopicSelection() {
     // Show topic selection, hide others
     if (topicSelectionContainer) topicSelectionContainer.style.display = 'block';
+    if (integrationTypeContainer) integrationTypeContainer.style.display = 'none';
     if (setupContainer) setupContainer.style.display = 'none';
     if (quizContainer) quizContainer.style.display = 'none';
     if (resultsContainer) resultsContainer.style.display = 'none';
@@ -74,7 +81,40 @@ function setupTopicSelection() {
     if (topicIntegrationBtn) {
         topicIntegrationBtn.addEventListener('click', function() {
             selectedTopic = 'integration';
-            loadQuizData('integration');
+            showIntegrationTypeSelection();
+        });
+    }
+}
+
+/**
+ * Show the integration type selection screen
+ */
+function showIntegrationTypeSelection() {
+    // Hide topic selection, show integration type selection
+    if (topicSelectionContainer) topicSelectionContainer.style.display = 'none';
+    if (integrationTypeContainer) {
+        integrationTypeContainer.style.display = 'block';
+        integrationTypeContainer.classList.add('fade-in');
+    }
+    
+    // Add event listeners for integration type buttons
+    if (integrationMockBtn) {
+        integrationMockBtn.addEventListener('click', function() {
+            selectedTopic = 'integration-mock';
+            loadQuizData('integration-mock');
+        });
+    }
+    if (integrationRealBtn) {
+        integrationRealBtn.addEventListener('click', function() {
+            selectedTopic = 'integration-real';
+            loadQuizData('integration-real');
+        });
+    }
+    if (backToTopicsBtn) {
+        backToTopicsBtn.addEventListener('click', function() {
+            integrationTypeContainer.style.display = 'none';
+            topicSelectionContainer.style.display = 'block';
+            topicSelectionContainer.classList.add('fade-in');
         });
     }
 }
@@ -85,11 +125,12 @@ function setupTopicSelection() {
 function loadQuizData(topic) {
     // Show loading state if needed
     if (topicSelectionContainer) topicSelectionContainer.style.display = 'none';
+    if (integrationTypeContainer) integrationTypeContainer.style.display = 'none';
     if (setupContainer) setupContainer.style.display = 'block';
     setupContainer.classList.add('fade-in');
 
     // Update quiz title for setup screen
-    updateQuizTitle();
+    updateQuizTitle(topic);
 
     // Dynamically import the quiz data
     let importPromise;
@@ -97,8 +138,10 @@ function loadQuizData(topic) {
         importPromise = import('../data/quiz-data.js');
     } else if (topic === 'cloud') {
         importPromise = import('../data/quiz-data-cloud.js');
-    } else if (topic === 'integration') {
+    } else if (topic === 'integration-mock') {
         importPromise = import('../data/quiz-integration.js');
+    } else if (topic === 'integration-real') {
+        importPromise = import('../data/quiz-integration-real.js');
     }
     importPromise.then(module => {
         selectedQuizData = module.quizData;
@@ -109,14 +152,18 @@ function loadQuizData(topic) {
 /**
  * Update the quiz title based on selected topic
  */
-function updateQuizTitle() {
+function updateQuizTitle(topic) {
     let title = 'Salesforce Quiz';
-    if (selectedTopic === 'architect') {
+    const currentTopic = topic || selectedTopic;
+    
+    if (currentTopic === 'architect') {
         title = 'Salesforce <span>Data Architect</span> Quiz';
-    } else if (selectedTopic === 'cloud') {
+    } else if (currentTopic === 'cloud') {
         title = 'Salesforce <span>Data Cloud</span> Quiz';
-    } else if (selectedTopic === 'integration') {
-        title = 'Salesforce <span>Integration</span> Quiz';
+    } else if (currentTopic === 'integration' || currentTopic === 'integration-mock') {
+        title = 'Salesforce <span>Integration Mock Test</span> Quiz';
+    } else if (currentTopic === 'integration-real') {
+        title = 'Salesforce <span>Integration Real Test</span> Quiz';
     }
     quizTitleEls.forEach(el => {
         el.innerHTML = title;
@@ -180,6 +227,7 @@ function initializeQuiz() {
     score = 0;
     userAnswers = Array(quizQuestions.length).fill([]);
     incorrectQuestions = [];
+    skippedQuestions = [];
     revealedAnswers = Array(quizQuestions.length).fill(false);
     
     // Set timer based on question count (approximately 2 minutes per question)
@@ -206,6 +254,11 @@ function initializeQuiz() {
     submitBtn.textContent = "Reveal Answer";
     submitBtn.addEventListener('click', toggleAnswerReveal);
     submitBtn.disabled = false; // Always enable the reveal button
+    
+    // Set up skip button
+    if (skipBtn) {
+        skipBtn.addEventListener('click', skipQuestion);
+    }
     
     // Update quiz title for quiz screen
     updateQuizTitle();
@@ -247,8 +300,8 @@ function loadQuestion() {
         // Clear previous answers
         answersEl.innerHTML = '';
         
-        // Sort answer keys to ensure consistent order
-        const answerKeys = Object.keys(currentQuestionData.answers).sort();
+        // Shuffle answer keys for randomized option order
+        const answerKeys = shuffleArray(Object.keys(currentQuestionData.answers));
         const inputType = currentQuestionData.multiSelect ? 'checkbox' : 'radio';
         
         // Create answer elements
@@ -473,6 +526,31 @@ function navigateToNextQuestion() {
 }
 
 /**
+ * Skip the current question (for incomplete questions)
+ */
+function skipQuestion() {
+    // Mark this question as skipped
+    if (!skippedQuestions.includes(currentQuestionIndex)) {
+        skippedQuestions.push(currentQuestionIndex);
+    }
+    
+    // Remove from incorrect questions if it was there
+    if (incorrectQuestions.includes(currentQuestionIndex)) {
+        incorrectQuestions = incorrectQuestions.filter(idx => idx !== currentQuestionIndex);
+    }
+    
+    // If this is the final question, show results
+    if (currentQuestionIndex === quizQuestions.length - 1) {
+        showResults();
+    } 
+    // Otherwise move to the next question
+    else if (currentQuestionIndex < quizQuestions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+    }
+}
+
+/**
  * Toggle revealing the answer
  */
 function toggleAnswerReveal() {
@@ -562,8 +640,12 @@ function showResults() {
     // Stop the timer
     clearInterval(timer);
     
-    // Recalculate score based on incorrectQuestions
-    score = quizQuestions.length - incorrectQuestions.length;
+    // Calculate total answered questions (excluding skipped)
+    const totalAnswered = quizQuestions.length - skippedQuestions.length;
+    
+    // Recalculate score based on incorrectQuestions (excluding skipped)
+    const incorrectAnswered = incorrectQuestions.filter(idx => !skippedQuestions.includes(idx));
+    score = totalAnswered - incorrectAnswered.length;
     
     // Hide quiz container and show results
     quizContainer.style.display = 'none';
@@ -571,8 +653,8 @@ function showResults() {
     resultsContainer.classList.add('fade-in');
     if (reviewContainer) reviewContainer.style.display = 'none';
     
-    // Calculate percentage
-    const percentage = Math.round((score / quizQuestions.length) * 100);
+    // Calculate percentage (only from answered questions)
+    const percentage = totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0;
     
     // Build results HTML
     let resultHTML = `
@@ -580,8 +662,13 @@ function showResults() {
         <div class="score-circle">
             <span class="score-value">${percentage}%</span>
         </div>
-        <p class="score-display">You answered ${score} out of ${quizQuestions.length} questions correctly.</p>
+        <p class="score-display">You answered ${score} out of ${totalAnswered} questions correctly.</p>
     `;
+    
+    // Show skipped questions count if any
+    if (skippedQuestions.length > 0) {
+        resultHTML += `<p class="skipped-info" style="color: #6c757d; font-style: italic;">${skippedQuestions.length} question(s) skipped</p>`;
+    }
     
     // Add feedback based on score
     if (percentage >= 80) {
@@ -636,11 +723,21 @@ function showReview() {
         <h2>Review of All Questions</h2>
     `;
     
-    // First show incorrect questions
-    if (incorrectQuestions.length > 0) {
-        reviewHTML += `<h3>Incorrect Answers (${incorrectQuestions.length}):</h3>`;
+    // First show skipped questions
+    if (skippedQuestions.length > 0) {
+        reviewHTML += `<h3>Skipped Questions (${skippedQuestions.length}):</h3>`;
         
-        incorrectQuestions.forEach(questionIndex => {
+        skippedQuestions.forEach(questionIndex => {
+            reviewHTML += buildReviewQuestionHTML(questionIndex, true);
+        });
+    }
+    
+    // Then show incorrect questions (excluding skipped)
+    const incorrectAnswered = incorrectQuestions.filter(idx => !skippedQuestions.includes(idx));
+    if (incorrectAnswered.length > 0) {
+        reviewHTML += `<h3>Incorrect Answers (${incorrectAnswered.length}):</h3>`;
+        
+        incorrectAnswered.forEach(questionIndex => {
             reviewHTML += buildReviewQuestionHTML(questionIndex);
         });
     }
@@ -648,7 +745,7 @@ function showReview() {
     // Then show correct questions
     const correctQuestions = [];
     for (let i = 0; i < quizQuestions.length; i++) {
-        if (!incorrectQuestions.includes(i)) {
+        if (!incorrectQuestions.includes(i) && !skippedQuestions.includes(i)) {
             correctQuestions.push(i);
         }
     }
@@ -688,11 +785,11 @@ function showReview() {
 /**
  * Build HTML for a review question
  */
-function buildReviewQuestionHTML(questionIndex) {
+function buildReviewQuestionHTML(questionIndex, isSkipped = false) {
     const question = quizQuestions[questionIndex];
     let html = `
-        <div class="review-question">
-            <h3>Question ${questionIndex + 1}</h3>
+        <div class="review-question ${isSkipped ? 'skipped-question' : ''}">
+            <h3>Question ${questionIndex + 1} ${isSkipped ? '<span style="color: #6c757d;">(Skipped)</span>' : ''}</h3>
             <p>${question.question}</p>
     `;
     
@@ -710,7 +807,7 @@ function buildReviewQuestionHTML(questionIndex) {
         question.correctAnswer : [question.correctAnswer];
     const userSelectedAnswers = userAnswers[questionIndex] || [];
     
-    // Show all answer options
+    // Show all answer options in alphabetical order for review
     Object.keys(question.answers).sort().forEach(key => {
         const isCorrect = correctAnswers.includes(key);
         const wasSelected = userSelectedAnswers.includes(key);
@@ -750,11 +847,23 @@ function buildReviewQuestionHTML(questionIndex) {
  * Function to randomly select questions
  */
 function getRandomQuestions(allQuestions, count) {
+    // Remove duplicate questions based on question text
+    const uniqueQuestions = [];
+    const seenQuestions = new Set();
+    
+    for (const q of allQuestions) {
+        const questionText = q.question.trim().toLowerCase();
+        if (!seenQuestions.has(questionText)) {
+            seenQuestions.add(questionText);
+            uniqueQuestions.push(q);
+        }
+    }
+    
     // Ensure count is within bounds
-    count = Math.min(Math.max(count, 1), allQuestions.length);
+    count = Math.min(Math.max(count, 1), uniqueQuestions.length);
     
     // Clone the array to avoid modifying the original
-    const questions = [...allQuestions];
+    const questions = [...uniqueQuestions];
     
     // Shuffle using Fisher-Yates algorithm
     for (let i = questions.length - 1; i > 0; i--) {
@@ -764,6 +873,18 @@ function getRandomQuestions(allQuestions, count) {
     
     // Return the first 'count' questions
     return questions.slice(0, count);
+}
+
+/**
+ * Shuffle an array using Fisher-Yates algorithm
+ */
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
 }
 
 /**

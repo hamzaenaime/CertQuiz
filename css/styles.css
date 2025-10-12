@@ -284,13 +284,17 @@ body {
 .button-container {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 10px;
     margin-top: 25px;
+    flex-wrap: wrap;
 }
 
 #submit-btn,
 .nav-btn,
 .retry-btn,
-.review-btn {
+.review-btn,
+.skip-btn {
     padding: 12px 25px;
     background-color: #007bff;
     color: white;
@@ -303,6 +307,17 @@ body {
     text-align: center;
     text-decoration: none;
     min-width: 120px;
+}
+
+.skip-btn {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.skip-btn:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 #submit-btn.reveal-active {
@@ -420,6 +435,11 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 25px;
     margin-bottom: 20px;
+}
+
+.review-question.skipped-question {
+    background-color: #fff9e6;
+    border-left: 4px solid #ffc107;
 }
 
 .review-question h3 {
@@ -571,7 +591,7 @@ body {
         margin-top: 15px;
     }
     
-    .nav-btn, #submit-btn {
+    .nav-btn, #submit-btn, .skip-btn {
         padding: 10px 15px;
         font-size: 0.9em;
         min-width: auto;
@@ -586,8 +606,12 @@ body {
     
     #submit-btn {
         order: 3;
-        flex-basis: 100%;
-        margin-top: 8px;
+        flex-basis: 48%;
+    }
+    
+    .skip-btn {
+        order: 4;
+        flex-basis: 48%;
     }
     
     #nav-next {
@@ -667,7 +691,7 @@ body {
         margin-top: 12px;
     }
     
-    .nav-btn, #submit-btn {
+    .nav-btn, #submit-btn, .skip-btn {
         padding: 8px 12px;
         font-size: 0.85em;
     }
@@ -678,7 +702,8 @@ body {
 }
 
 /* Topic selection styles */
-#topic-selection-container {
+#topic-selection-container,
+#integration-type-container {
   max-width: 500px;
   margin: 60px auto 0 auto;
   background: #fff;
@@ -715,9 +740,25 @@ body {
   transform: translateY(-2px) scale(1.04);
   outline: none;
 }
+.back-btn {
+  background: #6c757d;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.back-btn:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
 /* Responsive for mobile */
 @media (max-width: 600px) {
-  #topic-selection-container {
+  #topic-selection-container,
+  #integration-type-container {
     max-width: 98vw;
     padding: 1.2rem 0.5rem 1.5rem 0.5rem;
   }
