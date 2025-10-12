@@ -271,14 +271,67 @@ function initializeQuiz() {
 }
 
 /**
+ * Format question text with proper line breaks and list formatting
+ */
+function formatQuestionText(text) {
+    // Replace multiple spaces with single space
+    let formatted = text.replace(/\s+/g, ' ').trim();
+    
+    // Handle numbered lists (1., 2., etc.)
+    formatted = formatted.replace(/(\d+)\.\s+/g, '<br><br><strong>$1.</strong> ');
+    
+    // Handle bullet points (-, •, *, or starting with lowercase letter followed by parenthesis)
+    formatted = formatted.replace(/\s+-\s+/g, '<br>• ');
+    formatted = formatted.replace(/\s+•\s+/g, '<br>• ');
+    formatted = formatted.replace(/\s+\*\s+/g, '<br>• ');
+    
+    // Handle lettered lists (a), b), etc.)
+    formatted = formatted.replace(/\s+([a-z])\)\s+/gi, '<br><strong>$1)</strong> ');
+    
+    // Add line break after sentences (period followed by space and capital letter)
+    formatted = formatted.replace(/\.\s+([A-Z])/g, '.<br><br>$1');
+    
+    // Add line break after question marks followed by capital letter
+    formatted = formatted.replace(/\?\s+([A-Z])/g, '?<br><br>$1');
+    
+    // Clean up any leading line breaks
+    formatted = formatted.replace(/^(<br>)+/, '');
+    
+    return formatted;
+}
+
+/**
+ * Format answer text with proper line breaks and list formatting
+ */
+function formatAnswerText(text) {
+    // Replace multiple spaces with single space
+    let formatted = text.replace(/\s+/g, ' ').trim();
+    
+    // Handle bullet points in answers
+    formatted = formatted.replace(/\s+-\s+/g, '<br>• ');
+    formatted = formatted.replace(/\s+•\s+/g, '<br>• ');
+    formatted = formatted.replace(/\s+\*\s+/g, '<br>• ');
+    
+    // Add line break after sentences (period followed by space and capital letter) - but only for longer answers
+    if (formatted.length > 100) {
+        formatted = formatted.replace(/\.\s+([A-Z])/g, '.<br>$1');
+    }
+    
+    // Clean up any leading line breaks
+    formatted = formatted.replace(/^(<br>)+/, '');
+    
+    return formatted;
+}
+
+/**
  * Load the current question into the UI
  */
 function loadQuestion() {
     if (currentQuestionIndex < quizQuestions.length) {
         const currentQuestionData = quizQuestions[currentQuestionIndex];
         
-        // Update question text
-        questionEl.innerText = `Q${currentQuestionIndex + 1}: ${currentQuestionData.question}`;
+        // Update question text with formatting
+        questionEl.innerHTML = `<strong>Q${currentQuestionIndex + 1}:</strong> ${formatQuestionText(currentQuestionData.question)}`;
         
         // Show/hide multi-select hint and add required selections count
         if (multiSelectHintEl) {
@@ -338,7 +391,7 @@ function loadQuestion() {
             
             const label = document.createElement('label');
             label.htmlFor = uniqueId;
-            label.textContent = `${key.toUpperCase()}. ${currentQuestionData.answers[key]}`;
+            label.innerHTML = `${key.toUpperCase()}. ${formatAnswerText(currentQuestionData.answers[key])}`;
             
             li.appendChild(input);
             li.appendChild(label);
@@ -463,7 +516,7 @@ function updateAnswerExplanation() {
     if (revealedAnswers[currentQuestionIndex]) {
         const currentQuestion = quizQuestions[currentQuestionIndex];
         if (currentQuestion.explanation) {
-            answerExplanationEl.innerHTML = `<strong>Explanation:</strong> ${currentQuestion.explanation}`;
+            answerExplanationEl.innerHTML = `<strong>Explanation:</strong> ${formatAnswerText(currentQuestion.explanation)}`;
             answerExplanationEl.classList.add('visible');
         } else {
             answerExplanationEl.classList.remove('visible');
@@ -790,7 +843,7 @@ function buildReviewQuestionHTML(questionIndex, isSkipped = false) {
     let html = `
         <div class="review-question ${isSkipped ? 'skipped-question' : ''}">
             <h3>Question ${questionIndex + 1} ${isSkipped ? '<span style="color: #6c757d;">(Skipped)</span>' : ''}</h3>
-            <p>${question.question}</p>
+            <p>${formatQuestionText(question.question)}</p>
     `;
     
     // Add indicator for the number of correct selections required
@@ -819,7 +872,7 @@ function buildReviewQuestionHTML(questionIndex, isSkipped = false) {
         
         html += `
             <div class="review-answer ${classes.join(' ')}">
-                ${key.toUpperCase()}. ${question.answers[key]}
+                ${key.toUpperCase()}. ${formatAnswerText(question.answers[key])}
                 ${isCorrect ? ' ✓' : ''}
                 ${wasSelected && !isCorrect ? ' ✗' : ''}
             </div>
@@ -830,7 +883,7 @@ function buildReviewQuestionHTML(questionIndex, isSkipped = false) {
     if (question.explanation) {
         html += `
             <div class="explanation">
-                <strong>Explanation:</strong> ${question.explanation}
+                <strong>Explanation:</strong> ${formatAnswerText(question.explanation)}
             </div>
         `;
     }

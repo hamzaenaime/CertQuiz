@@ -169,9 +169,13 @@ body {
     font-weight: 600;
     margin-bottom: 25px;
     color: #1a1a1a;
-    line-height: 1.4;
+    line-height: 1.6;
     padding-bottom: 15px;
     border-bottom: 1px solid #eaeaea;
+}
+
+#question br {
+    line-height: 2;
 }
 
 .quiz-meta {
@@ -239,6 +243,7 @@ body {
     vertical-align: middle;
     font-size: 1.05em;
     user-select: none;
+    line-height: 1.5;
 }
 
 /* Correct/incorrect answer indicators */
@@ -449,6 +454,10 @@ body {
     padding-bottom: 10px;
 }
 
+.review-question p {
+    line-height: 1.6;
+}
+
 .review-answers {
     margin-bottom: 15px;
 }
@@ -457,6 +466,7 @@ body {
     padding: 10px;
     margin: 5px 0;
     border-radius: 5px;
+    line-height: 1.5;
 }
 
 .review-answer.correct {
@@ -479,6 +489,7 @@ body {
     border-radius: 8px;
     margin-top: 15px;
     font-style: italic;
+    line-height: 1.6;
 }
 
 /* Answer explanation styles */
@@ -488,6 +499,7 @@ body {
     border-radius: 8px;
     margin-top: 15px;
     display: none;
+    line-height: 1.6;
 }
 
 #answer-explanation.visible {
