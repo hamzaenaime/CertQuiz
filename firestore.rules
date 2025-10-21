@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Comments collection - Allow read and write for all users
+    match /comments/{commentId} {
+      // Allow anyone to read comments
+      allow read: if true;
+
+      // Allow anyone to create comments
+      allow create: if true;
+
+      // Allow anyone to update comments (for voting)
+      allow update: if true;
+
+      // Allow anyone to delete comments (admin function)
+      allow delete: if true;
+    }
+
+    // Questions collection - Allow read for all, write for all (admin will use this)
+    match /questions/{questionId} {
+      // Allow anyone to read questions
+      allow read: if true;
+
+      // Allow anyone to create questions (for deployment tool)
+      allow create: if true;
+
+      // Allow anyone to update questions (admin function)
+      allow update: if true;
+
+      // Allow anyone to delete questions (admin function)
+      allow delete: if true;
+    }
+  }
+}

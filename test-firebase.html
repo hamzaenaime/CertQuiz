@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Connection Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ccc;
+        }
+        .test-item.pending {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        .test-item.success {
+            background-color: #d4edda;
+            border-left-color: #28a745;
+        }
+        .test-item.error {
+            background-color: #f8d7da;
+            border-left-color: #dc3545;
+        }
+        .test-item h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+        .test-item p {
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔥 Firebase Connection Test</h1>
+
+        <div class="info">
+            <strong>📋 Instructions:</strong>
+            <p>This page tests your Firebase configuration. Click "Run Tests" to check if everything is set up correctly.</p>
+        </div>
+
+        <button onclick="runTests()">Run Tests</button>
+
+        <div id="test-results"></div>
+    </div>
+
+    <script type="module">
+        import { db } from './js/firebase-config.js';
+
+        window.testDb = db;
+
+        window.runTests = async function() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '';
+
+            // Test 1: Firebase SDK Loaded
+            addTest('test1', 'Firebase SDK Loaded', 'pending');
+            setTimeout(() => {
+                if (typeof firebase !== 'undefined') {
+                    updateTest('test1', 'success', 'Firebase SDK is loaded successfully! ✓');
+                    test2();
+                } else {
+                    updateTest('test1', 'error', 'Firebase SDK not found. Check if the Firebase scripts are loaded in the HTML.');
+                }
+            }, 100);
+        };
+
+        function test2() {
+            // Test 2: Firebase Initialized
+            addTest('test2', 'Firebase App Initialized', 'pending');
+            setTimeout(() => {
+                if (firebase.apps.length > 0) {
+                    updateTest('test2', 'success', `Firebase app initialized! App name: ${firebase.apps[0].name || 'default'} ✓`);
+                    test3();
+                } else {
+                    updateTest('test2', 'error', 'Firebase not initialized. Check your configuration in js/firebase-config.js');
+                }
+            }, 100);
+        }
+
+        function test3() {
+            // Test 3: Firestore Available
+            addTest('test3', 'Firestore Database Available', 'pending');
+            setTimeout(() => {
+                if (window.testDb) {
+                    updateTest('test3', 'success', 'Firestore database object is available! ✓');
+                    test4();
+                } else {
+                    updateTest('test3', 'error', 'Firestore database not initialized. Check firebase-config.js');
+                }
+            }, 100);
+        }
+
+        async function test4() {
+            // Test 4: Firestore Connection
+            addTest('test4', 'Firestore Connection Test', 'pending');
+            try {
+                const testCollection = await window.testDb.collection('comments').limit(1).get();
+                updateTest('test4', 'success', `Successfully connected to Firestore! Found ${testCollection.size} comment(s) in the database. ✓`);
+                test5();
+            } catch (error) {
+                let errorMsg = `Error: ${error.code || 'unknown'} - ${error.message}`;
+                if (error.code === 'permission-denied') {
+                    errorMsg += '\n\nSolution: Update your Firestore security rules to allow read access.';
+                }
+                updateTest('test4', 'error', errorMsg);
+            }
+        }
+
+        async function test5() {
+            // Test 5: Write Test (Create a test comment)
+            addTest('test5', 'Write Permission Test', 'pending');
+            const testQuestionId = 'test_question_' + Date.now();
+
+            try {
+                await window.testDb.collection('comments').add({
+                    questionId: testQuestionId,
+                    text: 'This is a test comment',
+                    author: 'TestUser',
+                    isAnonymous: false,
+                    userId: 'test_user',
+                    votes: 0,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAt: new Date().toISOString()
+                });
+                updateTest('test5', 'success', 'Successfully created a test comment! ✓\nYour comments system should work correctly.');
+                test6(testQuestionId);
+            } catch (error) {
+                let errorMsg = `Error: ${error.code || 'unknown'} - ${error.message}`;
+                if (error.code === 'permission-denied') {
+                    errorMsg += '\n\nSolution: Update your Firestore security rules to allow write access.';
+                }
+                updateTest('test5', 'error', errorMsg);
+            }
+        }
+
+        async function test6(testQuestionId) {
+            // Test 6: Read Specific Comment
+            addTest('test6', 'Read Test Comment', 'pending');
+
+            try {
+                const snapshot = await window.testDb.collection('comments')
+                    .where('questionId', '==', testQuestionId)
+                    .get();
+
+                if (snapshot.size > 0) {
+                    updateTest('test6', 'success', `Successfully read the test comment! Found ${snapshot.size} comment(s). ✓\n\n🎉 All tests passed! Your Firebase setup is complete.`);
+                } else {
+                    updateTest('test6', 'error', 'Could not find the test comment. There might be a delay in Firebase synchronization.');
+                }
+            } catch (error) {
+                updateTest('test6', 'error', `Error reading comment: ${error.message}`);
+            }
+        }
+
+        function addTest(id, title, status) {
+            const resultsDiv = document.getElementById('test-results');
+            const testDiv = document.createElement('div');
+            testDiv.id = id;
+            testDiv.className = `test-item ${status}`;
+            testDiv.innerHTML = `
+                <h3>${title}</h3>
+                <p>${status === 'pending' ? 'Testing...' : ''}</p>
+            `;
+            resultsDiv.appendChild(testDiv);
+        }
+
+        function updateTest(id, status, message) {
+            const testDiv = document.getElementById(id);
+            if (testDiv) {
+                testDiv.className = `test-item ${status}`;
+                const icon = status === 'success' ? '✅' : status === 'error' ? '❌' : '⏳';
+                testDiv.querySelector('p').innerHTML = `${icon} ${message.replace(/\n/g, '<br>')}`;
+            }
+        }
+    </script>
+</body>
+</html>

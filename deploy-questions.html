@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy Questions to Firebase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #0c5460;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #721c24;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            transition: transform 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .danger-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        #log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .log-line {
+            margin: 5px 0;
+        }
+
+        .log-success { color: #00ff00; }
+        .log-error { color: #ff0000; }
+        .log-info { color: #00bfff; }
+        .log-warning { color: #ffa500; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .topic-selector {
+            margin: 20px 0;
+        }
+
+        .topic-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .topic-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📤 Deploy Questions to Firebase</h1>
+        <p>This tool will upload all quiz questions from the local data file to Firebase.</p>
+
+        <div class="warning">
+            <strong>⚠️ Warning:</strong> This operation will add questions to Firebase. Make sure your Firebase configuration is correct.
+        </div>
+
+        <div class="topic-selector">
+            <label for="topic-select">Select Topic to Deploy:</label>
+            <select id="topic-select">
+                <option value="architect">Data Architect</option>
+                <option value="cloud">Data Cloud</option>
+                <option value="integration">Integration</option>
+            </select>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-box">
+                <div class="stat-value" id="total-questions">0</div>
+                <div class="stat-label">Total Questions</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="deployed-questions">0</div>
+                <div class="stat-label">Deployed</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="failed-questions">0</div>
+                <div class="stat-label">Failed</div>
+            </div>
+        </div>
+
+        <div>
+            <button onclick="deployQuestions()" id="deploy-btn">🚀 Deploy Questions</button>
+            <button onclick="clearQuestions()" id="clear-btn" class="danger-btn">🗑️ Clear All Questions</button>
+        </div>
+
+        <div id="log"></div>
+    </div>
+
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module">
+        import { db } from './js/firebase-config.js';
+
+        let totalDeployed = 0;
+        let totalFailed = 0;
+        let currentQuizData = null;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            logDiv.style.display = 'block';
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(line);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStats(totalQuestions = 0) {
+            document.getElementById('stats').style.display = 'grid';
+            document.getElementById('total-questions').textContent = totalQuestions;
+            document.getElementById('deployed-questions').textContent = totalDeployed;
+            document.getElementById('failed-questions').textContent = totalFailed;
+        }
+
+        async function loadQuizData(topic) {
+            let dataFile = '';
+
+            if (topic === 'architect') {
+                dataFile = './data/quiz-data.js';
+            } else if (topic === 'cloud') {
+                dataFile = './data/quiz-data-cloud.js';
+            } else if (topic === 'integration') {
+                dataFile = './data/quiz-integration.js';
+            }
+
+            try {
+                const module = await import(dataFile);
+                return module.quizData;
+            } catch (error) {
+                log(`Error loading quiz data from ${dataFile}: ${error.message}`, 'error');
+                console.error('Load error:', error);
+                return null;
+            }
+        }
+
+        window.deployQuestions = async function() {
+            if (!db) {
+                alert('Firebase not initialized. Please check your configuration.');
+                return;
+            }
+
+            const topic = document.getElementById('topic-select').value;
+
+            // Load the correct quiz data for the selected topic
+            log(`Loading questions for topic: ${topic}...`, 'info');
+            currentQuizData = await loadQuizData(topic);
+
+            if (!currentQuizData || currentQuizData.length === 0) {
+                alert(`No questions found for topic "${topic}". Please check the data file.`);
+                log(`❌ No questions found for topic: ${topic}`, 'error');
+                return;
+            }
+
+            log(`Found ${currentQuizData.length} questions to deploy`, 'success');
+
+            if (!confirm(`Are you sure you want to deploy ${currentQuizData.length} questions to Firebase for topic "${topic}"?`)) {
+                return;
+            }
+
+            const deployBtn = document.getElementById('deploy-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            deployBtn.disabled = true;
+            clearBtn.disabled = true;
+            deployBtn.textContent = '⏳ Deploying...';
+
+            totalDeployed = 0;
+            totalFailed = 0;
+            document.getElementById('log').innerHTML = '';
+
+            log(`Starting deployment of ${currentQuizData.length} questions for topic: ${topic}`, 'info');
+            updateStats(currentQuizData.length);
+
+            try {
+                for (let i = 0; i < currentQuizData.length; i++) {
+                    const question = currentQuizData[i];
+
+                    try {
+                        // Add question with topic
+                        const questionData = {
+                            ...question,
+                            topic: topic,
+                            questionNumber: i + 1,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        };
+
+                        await db.collection('questions').add(questionData);
+                        totalDeployed++;
+
+                        if ((i + 1) % 10 === 0) {
+                            log(`Deployed ${i + 1}/${currentQuizData.length} questions`, 'success');
+                        }
+
+                        updateStats(currentQuizData.length);
+                    } catch (error) {
+                        totalFailed++;
+                        log(`Failed to deploy question ${i + 1}: ${error.message}`, 'error');
+                        console.error(`Question ${i + 1} error:`, error, question);
+                        updateStats(currentQuizData.length);
+                    }
+                }
+
+                log(`✅ Deployment complete! Successfully deployed ${totalDeployed} questions`, 'success');
+
+                if (totalFailed > 0) {
+                    log(`⚠️ ${totalFailed} questions failed to deploy`, 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ Deployment failed: ${error.message}`, 'error');
+                console.error('Deployment error:', error);
+            } finally {
+                deployBtn.disabled = false;
+                clearBtn.disabled = false;
+                deployBtn.textContent = '🚀 Deploy Questions';
+            }
+        };
+
+        window.clearQuestions = async function() {
+            if (!db) {
+                alert('Firebase not initialized. Please check your configuration.');
+                return;
+            }
+
+            const topic = document.getElementById('topic-select').value;
+
+            if (!confirm(`⚠️ WARNING: This will DELETE ALL questions for topic "${topic}" from Firebase. This action cannot be undone. Are you absolutely sure?`)) {
+                return;
+            }
+
+            if (!confirm('Last chance! Are you REALLY sure you want to delete all questions?')) {
+                return;
+            }
+
+            const deployBtn = document.getElementById('deploy-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            deployBtn.disabled = true;
+            clearBtn.disabled = true;
+            clearBtn.textContent = '⏳ Deleting...';
+
+            document.getElementById('log').innerHTML = '';
+            log(`Starting deletion of all questions for topic: ${topic}`, 'warning');
+
+            try {
+                const snapshot = await db.collection('questions')
+                    .where('topic', '==', topic)
+                    .get();
+
+                log(`Found ${snapshot.size} questions to delete`, 'info');
+
+                let deleted = 0;
+                const batch = db.batch();
+
+                snapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                    deleted++;
+                });
+
+                await batch.commit();
+
+                log(`✅ Successfully deleted ${deleted} questions`, 'success');
+
+            } catch (error) {
+                log(`❌ Deletion failed: ${error.message}`, 'error');
+                console.error('Deletion error:', error);
+            } finally {
+                deployBtn.disabled = false;
+                clearBtn.disabled = false;
+                clearBtn.textContent = '🗑️ Clear All Questions';
+            }
+        };
+
+        // Show initial message when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Ready to deploy questions. Select a topic and click "Deploy Questions" to start.', 'info');
+        });
+    </script>
+</body>
+</html>

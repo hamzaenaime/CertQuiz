@@ -14,6 +14,10 @@
             font-family: 'Poppins', sans-serif;
         }
     </style>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <div id="topic-selection-container" class="fade-in" style="display: block;">
@@ -83,6 +87,31 @@
             <button class="skip-btn" id="skip-btn">Skip Question</button>
             <button class="nav-btn" id="nav-next">Next</button>
         </div>
+
+        <!-- Comments Section -->
+        <div id="comments-section" class="comments-section">
+            <h3 class="comments-title">
+                <span class="comments-icon">💬</span>
+                Discussion & Feedback
+                <span class="comments-count" id="comments-count">0</span>
+            </h3>
+            <p class="comments-description">Not sure about the answer? Share your thoughts or report incorrect answers.</p>
+
+            <!-- Comment Form -->
+            <div class="comment-form">
+                <input type="text" id="user-name-input" class="user-name-input" placeholder="Your name (optional - anonymous if blank)" maxlength="30">
+                <textarea id="comment-input" class="comment-input" placeholder="Share your thoughts or report an issue with this question..." rows="3" maxlength="500"></textarea>
+                <div class="comment-form-footer">
+                    <span class="char-count" id="char-count">0/500</span>
+                    <button id="submit-comment-btn" class="submit-comment-btn">Post Comment</button>
+                </div>
+            </div>
+
+            <!-- Comments List -->
+            <div id="comments-list" class="comments-list">
+                <div class="loading-comments">Loading comments...</div>
+            </div>
+        </div>
     </div>
 
     <div id="results-container">
@@ -93,7 +122,8 @@
         <!-- Review of incorrect answers will be inserted here by JavaScript -->
     </div>
 
-    <!-- Import the quiz data and logic as modules -->
+    <!-- Import Firebase configuration and quiz logic as modules -->
+    <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/quiz.js"></script>
 </body>
 </html>

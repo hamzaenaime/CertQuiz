@@ -1,0 +1,119 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                  CERTQUIZ SETUP CHECKLIST                     ║
+╚═══════════════════════════════════════════════════════════════╝
+
+ERROR FIX: "Missing or insufficient permissions"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+☐ Step 1: Open Firebase Console
+  → https://console.firebase.google.com/
+  → Select project: certquiz-aada9
+
+☐ Step 2: Navigate to Firestore Rules
+  → Click "Firestore Database" (left sidebar)
+  → Click "Rules" tab (top menu)
+
+☐ Step 3: Update Security Rules
+  → Copy rules from "firestore.rules" file
+  → Or use the rules from FIREBASE_SECURITY_SETUP.md
+  → Paste into the editor
+
+☐ Step 4: Publish Rules
+  → Click "Publish" button
+  → Wait for green success message
+
+☐ Step 5: Verify
+  → Refresh your browser
+  → Try loading the quiz again
+  → Error should be GONE! ✓
+
+
+DEPLOYMENT CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+☐ Deploy Data Architect Questions
+  → Open: deploy-questions.html
+  → Select: "Data Architect"
+  → Click: "🚀 Deploy Questions"
+  → Wait for completion
+
+☐ Deploy Data Cloud Questions (Optional)
+  → Select: "Data Cloud"
+  → Deploy
+
+☐ Deploy Integration Questions (Optional)
+  → Select: "Integration"
+  → Deploy
+
+
+TESTING CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+☐ Test Quiz Loading
+  → Open: index.html
+  → Select topic
+  → Questions load from Firebase ✓
+
+☐ Test Admin Login
+  → Open: admin.html
+  → Login: admin / admin
+  → Dashboard appears ✓
+
+☐ Test Comments Management
+  → Admin → Comments tab
+  → Can view/delete comments ✓
+
+☐ Test Questions Management
+  → Admin → Questions tab
+  → Can view questions ✓
+  → Can filter by topic ✓
+  → Can delete questions ✓
+
+
+QUICK REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Main Quiz:        index.html
+Admin Portal:     admin.html (admin/admin)
+Deploy Tool:      deploy-questions.html
+
+Firebase Console: console.firebase.google.com
+Your Project:     certquiz-aada9
+
+
+DOCUMENTATION FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+QUICKSTART.md               ← START HERE! Quick 5-minute setup
+FIREBASE_SECURITY_SETUP.md  ← Fix permission errors
+ADMIN_README.md             ← Complete admin documentation
+firestore.rules             ← Security rules to paste
+
+
+TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem: "Missing or insufficient permissions"
+Solution: Update Firebase security rules (see above)
+
+Problem: "No questions found"
+Solution: Deploy questions using deploy-questions.html
+
+Problem: Questions don't load
+Solution: Check browser console (F12) for errors
+
+Problem: Can't delete comments/questions
+Solution: Verify Firebase rules are published
+
+
+DONE! ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Once all checkboxes are checked, your CertQuiz admin portal
+is fully operational!
+
+Need help? Check FIREBASE_SECURITY_SETUP.md for detailed guides.
+
+╔═══════════════════════════════════════════════════════════════╗
+║                     Happy Quizzing! 🎉                        ║
+╚═══════════════════════════════════════════════════════════════╝

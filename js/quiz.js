@@ -2,6 +2,10 @@
  * Salesforce Data Architect Quiz Application
  */
 
+// Import comments system and Firebase
+import { initializeComments } from './comments.js';
+import { db } from './firebase-config.js';
+
 // Main quiz state and variables
 let currentQuestionIndex = 0;
 let score = 0;
@@ -15,6 +19,7 @@ let timeLeft = 0; // Will be set based on number of questions
 let questionCount = 15; // Default question count
 let selectedQuizData = null; // Will hold the loaded quiz data
 let selectedTopic = null; // 'architect', 'cloud', or 'integration'
+let useFirebase = true; // Flag to use Firebase or local data
 
 // DOM elements
 const topicSelectionContainer = document.getElementById('topic-selection-container');
@@ -120,9 +125,9 @@ function showIntegrationTypeSelection() {
 }
 
 /**
- * Dynamically import the selected quiz data file
+ * Dynamically import the selected quiz data file or load from Firebase
  */
-function loadQuizData(topic) {
+async function loadQuizData(topic) {
     // Show loading state if needed
     if (topicSelectionContainer) topicSelectionContainer.style.display = 'none';
     if (integrationTypeContainer) integrationTypeContainer.style.display = 'none';
@@ -132,7 +137,50 @@ function loadQuizData(topic) {
     // Update quiz title for setup screen
     updateQuizTitle(topic);
 
-    // Dynamically import the quiz data
+    // Normalize topic name for Firebase (remove -mock/-real suffix)
+    let firebaseTopic = topic;
+    if (topic === 'integration-mock' || topic === 'integration-real') {
+        firebaseTopic = 'integration';
+    }
+
+    // Try to load from Firebase first
+    if (db && useFirebase) {
+        try {
+            showLoadingMessage('Loading questions from database...');
+
+            const snapshot = await db.collection('questions')
+                .where('topic', '==', firebaseTopic)
+                .get();
+
+            if (snapshot.size > 0) {
+                const questions = [];
+                snapshot.forEach(doc => {
+                    questions.push(doc.data());
+                });
+
+                // Sort by question number
+                questions.sort((a, b) => (a.questionNumber || 0) - (b.questionNumber || 0));
+
+                selectedQuizData = questions;
+                console.log(`Loaded ${questions.length} questions from Firebase for topic: ${firebaseTopic}`);
+                hideLoadingMessage();
+                setupQuizConfig();
+                return;
+            } else {
+                console.warn(`No questions found in Firebase for topic: ${firebaseTopic}. Falling back to local data.`);
+                useFirebase = false;
+            }
+        } catch (error) {
+            console.error('Error loading questions from Firebase:', error);
+            console.log('Falling back to local quiz data files...');
+            useFirebase = false;
+        }
+    }
+
+    // Fallback: Load from local files
+    hideLoadingMessage();
+    showLoadingMessage('Loading questions from local files...');
+
     let importPromise;
     if (topic === 'architect') {
         importPromise = import('../data/quiz-data.js');
@@ -143,10 +191,47 @@ function loadQuizData(topic) {
     } else if (topic === 'integration-real') {
         importPromise = import('../data/quiz-integration-real.js');
     }
+
     importPromise.then(module => {
         selectedQuizData = module.quizData;
+        console.log(`Loaded ${selectedQuizData.length} questions from local files`);
+        hideLoadingMessage();
         setupQuizConfig();
+    }).catch(error => {
+        console.error('Error loading local quiz data:', error);
+        hideLoadingMessage();
+        alert('Error loading quiz questions. Please refresh the page and try again.');
     });
+}
+
+/**
+ * Show loading message
+ */
+function showLoadingMessage(message) {
+    if (setupContainer) {
+        const existingMsg = setupContainer.querySelector('.loading-message');
+        if (existingMsg) {
+            existingMsg.textContent = message;
+        } else {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-message';
+            loadingDiv.style.cssText = 'text-align: center; padding: 20px; color: #667eea; font-weight: 600;';
+            loadingDiv.textContent = message;
+            setupContainer.insertBefore(loadingDiv, setupContainer.firstChild);
+        }
+    }
+}
+
+/**
+ * Hide loading message
+ */
+function hideLoadingMessage() {
+    if (setupContainer) {
+        const loadingMsg = setupContainer.querySelector('.loading-message');
+        if (loadingMsg) {
+            loadingMsg.remove();
+        }
+    }
 }
 
 /**
@@ -445,9 +530,13 @@ function loadQuestion() {
         questionContainer.classList.remove('fade-in');
         void questionContainer.offsetWidth; // Trigger reflow
         questionContainer.classList.add('fade-in');
-        
+
         // Check if required number of answers is selected (initial state)
         updateButtonStatesForRequiredAnswers();
+
+        // Initialize comments for this question
+        const questionId = generateQuestionId(currentQuestionData);
+        initializeComments(questionId);
     } else {
         // Should not happen if called correctly
         showResults();
@@ -938,6 +1027,23 @@ function shuffleArray(array) {
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
+}
+
+/**
+ * Generate a unique ID for a question based on its content
+ * This ensures comments are tied to the actual question, not its position
+ */
+function generateQuestionId(questionData) {
+    // Create a hash from the question text for a consistent ID
+    const questionText = questionData.question.trim();
+    let hash = 0;
+    for (let i = 0; i < questionText.length; i++) {
+        const char = questionText.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    // Include topic in the ID to differentiate same questions across topics
+    return `${selectedTopic}_q_${Math.abs(hash)}`;
 }
 
 /**
