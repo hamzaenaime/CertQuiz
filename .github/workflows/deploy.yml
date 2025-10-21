@@ -27,40 +27,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create config.local.js from secrets
-        run: |
-          cat > config.local.js << 'EOF'
-          /**
-           * Configuration for GitHub Pages Deployment
-           * Generated from GitHub Secrets during deployment
-           * DO NOT EDIT - This file is auto-generated
-           */
-
-          window.LOCAL_CONFIG = {
-              // Firebase Configuration
-              FIREBASE_API_KEY: "${{ secrets.FIREBASE_API_KEY }}",
-              FIREBASE_AUTH_DOMAIN: "${{ secrets.FIREBASE_AUTH_DOMAIN }}",
-              FIREBASE_PROJECT_ID: "${{ secrets.FIREBASE_PROJECT_ID }}",
-              FIREBASE_STORAGE_BUCKET: "${{ secrets.FIREBASE_STORAGE_BUCKET }}",
-              FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}",
-              FIREBASE_APP_ID: "${{ secrets.FIREBASE_APP_ID }}",
-              FIREBASE_MEASUREMENT_ID: "${{ secrets.FIREBASE_MEASUREMENT_ID }}",
-
-              // Admin Portal Credentials
-              ADMIN_USERNAME: "${{ secrets.ADMIN_USERNAME }}",
-              ADMIN_PASSWORD: "${{ secrets.ADMIN_PASSWORD }}"
-          };
-          EOF
-
-      - name: Verify config was created
-        run: |
-          if [ -f config.local.js ]; then
-            echo "✅ config.local.js created successfully"
-            echo "File size: $(wc -c < config.local.js) bytes"
-          else
-            echo "❌ Failed to create config.local.js"
-            exit 1
-          fi
+      # Note: Firebase config is now in js/firebase-config.js
+      # Admin credentials should be managed through Firebase Authentication
+      # See SECURITY.md for proper authentication setup
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

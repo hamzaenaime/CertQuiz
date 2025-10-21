@@ -1,36 +1,41 @@
 /**
  * Firebase Configuration and Initialization
  *
- * SECURITY: Credentials are loaded from environment configuration
- * See config.local.js.template for setup instructions
+ * SECURITY NOTE: Firebase config is safe to expose in client-side code
+ * Security is handled by Firestore Security Rules, not by hiding these values
+ *
+ * To use your own Firebase project:
+ * 1. Replace the firebaseConfig object below with your project's config
+ * 2. Get it from: Firebase Console > Project Settings > Your apps > Web app
  */
 
-import { envConfig } from './env-loader.js';
-
+// TODO: Replace this with your actual Firebase configuration
+// Get it from: https://console.firebase.google.com/ > Project Settings
 const firebaseConfig = {
-    apiKey: envConfig.get('FIREBASE_API_KEY'),
-    authDomain: envConfig.get('FIREBASE_AUTH_DOMAIN'),
-    projectId: envConfig.get('FIREBASE_PROJECT_ID'),
-    storageBucket: envConfig.get('FIREBASE_STORAGE_BUCKET'),
-    messagingSenderId: envConfig.get('FIREBASE_MESSAGING_SENDER_ID'),
-    appId: envConfig.get('FIREBASE_APP_ID'),
-    measurementId: envConfig.get('FIREBASE_MEASUREMENT_ID')
+    apiKey: "AIzaSyAW2uOYbgqQ3G_7krgW-PM4nQ8vQfA3l_k",
+    authDomain: "certquiz-aada9.firebaseapp.com",
+    projectId: "certquiz-aada9",
+    storageBucket: "certquiz-aada9.firebasestorage.app",
+    messagingSenderId: "212386801853",
+    appId: "1:212386801853:web:70081b404d35cd265cafd4",
+    measurementId: "G-S1J6NPS95T"
 };
 
 // Initialize Firebase
 let db = null;
 
 try {
-    if (!envConfig.isConfigured()) {
-        throw new Error('Firebase configuration is incomplete. Please set up config.local.js or environment variables.');
+    // Check if config is set
+    if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_FIREBASE_API_KEY") {
+        throw new Error('Firebase configuration not set. Please update firebase-config.js with your Firebase project details.');
     }
 
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
-    console.log('Firebase initialized successfully');
+    console.log('✅ Firebase initialized successfully');
 } catch (error) {
-    console.error('Error initializing Firebase:', error);
-    console.error('Please check your configuration. See config.local.js.template for instructions.');
+    console.error('❌ Error initializing Firebase:', error.message);
+    console.error('Please update js/firebase-config.js with your Firebase project configuration.');
 }
 
 export { db };
