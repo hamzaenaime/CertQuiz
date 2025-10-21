@@ -762,10 +762,18 @@ body {
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   transition: all 0.2s ease;
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
 }
 
 .comment-item:hover {
   box-shadow: var(--shadow-sm);
+}
+
+.comment-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .comment-header {
@@ -807,15 +815,8 @@ body {
   font-size: 0.875rem;
   line-height: 1.6;
   color: var(--color-foreground);
-  margin-bottom: var(--space-3);
   white-space: pre-wrap;
   word-wrap: break-word;
-}
-
-.comment-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
 }
 
 /* Reddit-style vote buttons */
@@ -823,11 +824,12 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: var(--color-background);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-1);
-  gap: 0;
+  padding: var(--space-2);
+  gap: var(--space-1);
+  flex-shrink: 0;
 }
 
 .vote-btn {
