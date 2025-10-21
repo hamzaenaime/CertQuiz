@@ -2,6 +2,8 @@
 
 CertQuiz is a web application designed to help users prepare for certification exams through interactive quizzes.
 
+
+
 ## Features
 
 -   Practice quizzes on various certification topics.
