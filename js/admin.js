@@ -4,11 +4,12 @@
  */
 
 import { db } from './firebase-config.js';
+import { envConfig } from './env-loader.js';
 
-// Admin credentials (in production, use proper authentication)
+// Admin credentials loaded from environment configuration
 const ADMIN_CREDENTIALS = {
-    username: 'admin',
-    password: 'admin'
+    username: envConfig.get('ADMIN_USERNAME') || 'admin',
+    password: envConfig.get('ADMIN_PASSWORD') || 'admin'
 };
 
 // Current filter state

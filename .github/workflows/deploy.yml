@@ -1,0 +1,84 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Runs on pushes to main branch
+  push:
+    branches: [ main ]
+
+  # Allows manual trigger from Actions tab
+  workflow_dispatch:
+
+# Sets permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create config.local.js from secrets
+        run: |
+          cat > config.local.js << 'EOF'
+          /**
+           * Configuration for GitHub Pages Deployment
+           * Generated from GitHub Secrets during deployment
+           * DO NOT EDIT - This file is auto-generated
+           */
+
+          window.LOCAL_CONFIG = {
+              // Firebase Configuration
+              FIREBASE_API_KEY: "${{ secrets.FIREBASE_API_KEY }}",
+              FIREBASE_AUTH_DOMAIN: "${{ secrets.FIREBASE_AUTH_DOMAIN }}",
+              FIREBASE_PROJECT_ID: "${{ secrets.FIREBASE_PROJECT_ID }}",
+              FIREBASE_STORAGE_BUCKET: "${{ secrets.FIREBASE_STORAGE_BUCKET }}",
+              FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}",
+              FIREBASE_APP_ID: "${{ secrets.FIREBASE_APP_ID }}",
+              FIREBASE_MEASUREMENT_ID: "${{ secrets.FIREBASE_MEASUREMENT_ID }}",
+
+              // Admin Portal Credentials
+              ADMIN_USERNAME: "${{ secrets.ADMIN_USERNAME }}",
+              ADMIN_PASSWORD: "${{ secrets.ADMIN_PASSWORD }}"
+          };
+          EOF
+
+      - name: Verify config was created
+        run: |
+          if [ -f config.local.js ]; then
+            echo "✅ config.local.js created successfully"
+            echo "File size: $(wc -c < config.local.js) bytes"
+          else
+            echo "❌ Failed to create config.local.js"
+            exit 1
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: '.'
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -21,13 +21,13 @@ This guide will walk you through setting up Firebase for the comments system in 
 The configuration should look like this:
 ```javascript
 const firebaseConfig = {
-  apiKey: "AIzaSyAW2uOYbgqQ3G_7krgW-PM4nQ8vQfA3l_k",
-  authDomain: "certquiz-aada9.firebaseapp.com",
-  projectId: "certquiz-aada9",
-  storageBucket: "certquiz-aada9.firebasestorage.app",
-  messagingSenderId: "212386801853",
-  appId: "1:212386801853:web:70081b404d35cd265cafd4",
-  measurementId: "G-S1J6NPS95T"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID"
 };
 ```
 
@@ -90,21 +90,38 @@ Adjust these rules based on your security requirements.
 
 ## Step 4: Configure Your Application
 
-1. Open `js/firebase-config.js` in your project
-2. Replace the placeholder values with your Firebase configuration:
+**IMPORTANT: This application now uses secure credential management. Never commit your actual credentials to Git!**
 
-```javascript
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",                    // Replace with your API key
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",  // Replace with your auth domain
-    projectId: "YOUR_PROJECT_ID",              // Replace with your project ID
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",   // Replace with your storage bucket
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",  // Replace with your sender ID
-    appId: "YOUR_APP_ID"                       // Replace with your app ID
-};
-```
+1. Copy the configuration template:
+   ```bash
+   cp config.local.js.template config.local.js
+   ```
 
-3. Save the file
+2. Open `config.local.js` in your editor
+
+3. Replace the placeholder values with your Firebase configuration from Step 2:
+   ```javascript
+   window.LOCAL_CONFIG = {
+       FIREBASE_API_KEY: "your_actual_api_key",
+       FIREBASE_AUTH_DOMAIN: "your_project_id.firebaseapp.com",
+       FIREBASE_PROJECT_ID: "your_project_id",
+       FIREBASE_STORAGE_BUCKET: "your_project_id.appspot.com",
+       FIREBASE_MESSAGING_SENDER_ID: "your_messaging_sender_id",
+       FIREBASE_APP_ID: "your_app_id",
+       FIREBASE_MEASUREMENT_ID: "your_measurement_id",
+
+       // Set strong admin credentials
+       ADMIN_USERNAME: "your_chosen_username",
+       ADMIN_PASSWORD: "your_strong_password"
+   };
+   ```
+
+4. Save the file. **The `.gitignore` file ensures `config.local.js` will never be committed to Git.**
+
+5. Add `config.local.js` to your HTML files. In `index.html` and `admin.html`, add this line **before** other script imports:
+   ```html
+   <script src="config.local.js"></script>
+   ```
 
 ## Step 5: Create Indexes (Optional - Not Required!)
 
@@ -184,12 +201,35 @@ For more users, consider upgrading to the **Blaze plan** (pay-as-you-go).
 
 ## Security Best Practices
 
-1. **Never commit** your Firebase configuration to public repositories if it contains sensitive data
-2. Set up **proper security rules** before deploying to production
-3. Consider implementing **rate limiting** to prevent abuse
-4. Monitor your **Firebase usage** regularly
-5. Consider adding **authentication** for added security
-6. Use **reCAPTCHA** to prevent spam (optional enhancement)
+1. ✅ **Never commit credentials** - This app now uses `config.local.js` which is automatically git-ignored
+2. ✅ **Strong admin passwords** - Change the default admin credentials in `config.local.js`
+3. ✅ **Firebase security rules** - Properly configured in Step 3 above
+4. ⚠️ **Firebase API keys are public by design** - They identify your project but security is enforced by Firestore rules
+5. 🔄 **Rotate credentials if exposed** - See "Emergency: Credentials Exposed" section below
+6. 📊 **Monitor usage** - Check Firebase Console regularly for unusual activity
+7. 🔐 **Consider authentication** - For production, implement Firebase Authentication instead of hardcoded admin passwords
+8. 🛡️ **Use reCAPTCHA** - Add spam protection for comment submissions (optional enhancement)
+
+### Emergency: Credentials Already Exposed
+
+If your credentials were already committed to Git (as in previous commits):
+
+**For Firebase API Keys:**
+1. Go to Firebase Console > Project Settings
+2. Under "General" tab, you can't rotate API keys directly
+3. Instead, restrict your API key:
+   - Go to Google Cloud Console > APIs & Services > Credentials
+   - Find your Browser key (Auto-created by Firebase)
+   - Add HTTP referrer restrictions (e.g., only your domain)
+   - Add API restrictions (only enable required APIs)
+
+**For Admin Password:**
+1. Update `config.local.js` with a new strong password immediately
+2. The old password in git history won't work anymore once you update your config
+
+**For Firestore Data:**
+1. Ensure your security rules from Step 3 are properly configured
+2. These rules prevent unauthorized data modification regardless of API key exposure
 
 ## Additional Resources
 
