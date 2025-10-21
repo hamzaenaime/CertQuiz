@@ -316,11 +316,11 @@ function renderComment(comment) {
             <div class="comment-actions">
                 <div class="vote-buttons">
                     <button class="vote-btn upvote ${userVote === 'up' ? 'voted' : ''}" data-comment-id="${comment.id}" data-vote-type="up">
-                        👍
+                        ▲
                     </button>
                     <span class="vote-count ${voteCountClass}">${voteCount}</span>
                     <button class="vote-btn downvote ${userVote === 'down' ? 'voted' : ''}" data-comment-id="${comment.id}" data-vote-type="down">
-                        👎
+                        ▼
                     </button>
                 </div>
             </div>

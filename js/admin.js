@@ -243,7 +243,9 @@ function renderAdminComment(comment) {
                         ${comment.isAnonymous ? '<span class="anonymous-badge">Anonymous</span>' : ''}
                     </span>
                     <span class="admin-comment-date">📅 ${date}</span>
-                    <span class="admin-comment-question">Question ID: ${comment.questionId}</span>
+                    <a href="#" class="admin-comment-question-link" onclick="goToQuestion('${comment.questionId}'); return false;">
+                        📝 Question ID: ${comment.questionId}
+                    </a>
                 </div>
             </div>
             <div class="admin-comment-text">${escapeHtml(comment.text)}</div>
@@ -252,7 +254,7 @@ function renderAdminComment(comment) {
                     🗑️ Delete
                 </button>
                 <div class="vote-info">
-                    👍👎 Votes: <span class="vote-count ${voteCountClass}">${voteCount}</span>
+                    ▲▼ Votes: <span class="vote-count ${voteCountClass}">${voteCount}</span>
                 </div>
             </div>
         </div>
@@ -472,52 +474,65 @@ function renderQuestion(question) {
     const questionComments = commentsByQuestion[questionHashId] || [];
     const commentCount = questionComments.length;
 
+    // Get first line of question (up to 100 chars or first period)
+    const questionText = question.question || '';
+    const firstLine = questionText.length > 100
+        ? questionText.substring(0, 100) + '...'
+        : questionText.split(/[.!?]/)[0] + (questionText.includes('.') || questionText.includes('!') || questionText.includes('?') ? '.' : '');
+
     return `
-        <div class="question-item" data-question-id="${question.id}">
-            <div class="question-header">
-                <div class="question-meta">
-                    <span class="question-number">#${question.questionNumber || 'N/A'}</span>
-                    <span class="question-topic">${escapeHtml(question.topic || 'N/A')}</span>
-                    ${question.multiSelect ? '<span class="multiselect-badge">Multi-Select</span>' : ''}
-                </div>
-            </div>
-            <div class="question-text">${escapeHtml(question.question)}</div>
-            <div class="question-answers">
-                ${answerKeys.map(key => `
-                    <div class="answer-item">
-                        <span class="answer-letter">${key.toUpperCase()})</span>
-                        ${escapeHtml(answers[key])}
+        <div class="question-item collapsed" data-question-id="${question.id}">
+            <div class="question-header" onclick="toggleQuestionExpand('${question.id}')">
+                <div class="question-summary">
+                    <div class="question-meta">
+                        <span class="expand-icon" id="expand-icon-${question.id}">▶</span>
+                        <span class="question-number">#${question.questionNumber || 'N/A'}</span>
+                        <span class="question-topic">${escapeHtml(question.topic || 'N/A')}</span>
+                        ${question.multiSelect ? '<span class="multiselect-badge">Multi-Select</span>' : ''}
+                        ${commentCount > 0 ? `<span class="comments-badge-small">💬 ${commentCount}</span>` : ''}
                     </div>
-                `).join('')}
-            </div>
-            <div class="correct-answer">
-                ✅ <strong>Correct Answer:</strong> ${correctAnswer}
-            </div>
-            ${question.explanation ? `
-                <div class="question-explanation">
-                    💡 <strong>Explanation:</strong> ${escapeHtml(question.explanation)}
+                    <div class="question-preview">${escapeHtml(firstLine)}</div>
                 </div>
-            ` : ''}
-
-            <!-- Comments Section -->
-            <div class="question-comments-section">
-                <div class="comments-toggle" onclick="toggleQuestionComments('${question.id}')">
-                    <span class="comments-toggle-icon" id="toggle-icon-${question.id}">▶</span>
-                    <span>💬 Comments</span>
-                    <span class="comments-badge">${commentCount}</span>
-                </div>
-                <div class="question-comments-list" id="comments-list-${question.id}">
-                    ${commentCount > 0 ? questionComments.map(comment => renderQuestionComment(comment)).join('') : '<div class="no-comments-message">No comments yet</div>'}
+                <div class="question-actions-collapsed">
+                    <button class="edit-btn edit-question-btn" data-question-id="${question.id}" onclick="event.stopPropagation();">
+                        ✏️ Edit
+                    </button>
+                    <button class="delete-btn delete-question-btn" data-question-id="${question.id}" onclick="event.stopPropagation();">
+                        🗑️ Delete
+                    </button>
                 </div>
             </div>
 
-            <div class="admin-comment-actions">
-                <button class="edit-btn edit-question-btn" data-question-id="${question.id}">
-                    ✏️ Edit
-                </button>
-                <button class="delete-btn delete-question-btn" data-question-id="${question.id}">
-                    🗑️ Delete
-                </button>
+            <div class="question-details" id="question-details-${question.id}">
+                <div class="question-text-full">${escapeHtml(questionText)}</div>
+                <div class="question-answers">
+                    ${answerKeys.map(key => `
+                        <div class="answer-item">
+                            <span class="answer-letter">${key.toUpperCase()})</span>
+                            ${escapeHtml(answers[key])}
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="correct-answer">
+                    ✅ <strong>Correct Answer:</strong> ${correctAnswer}
+                </div>
+                ${question.explanation ? `
+                    <div class="question-explanation">
+                        💡 <strong>Explanation:</strong> ${escapeHtml(question.explanation)}
+                    </div>
+                ` : ''}
+
+                <!-- Comments Section -->
+                <div class="question-comments-section">
+                    <div class="comments-toggle" onclick="toggleQuestionComments('${question.id}')">
+                        <span class="comments-toggle-icon" id="toggle-icon-${question.id}">▶</span>
+                        <span>💬 Comments</span>
+                        <span class="comments-badge">${commentCount}</span>
+                    </div>
+                    <div class="question-comments-list" id="comments-list-${question.id}">
+                        ${commentCount > 0 ? questionComments.map(comment => renderQuestionComment(comment)).join('') : '<div class="no-comments-message">No comments yet</div>'}
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -546,7 +561,7 @@ function renderQuestionComment(comment) {
             <div class="question-comment-text">${escapeHtml(comment.text)}</div>
             <div class="question-comment-actions">
                 <span class="comment-vote-info">
-                    👍👎 <span class="vote-count ${voteCountClass}">${voteCount}</span>
+                    ▲▼ <span class="vote-count ${voteCountClass}">${voteCount}</span>
                 </span>
                 <button class="small-delete-btn" onclick="deleteCommentFromQuestion('${comment.id}')">
                     🗑️ Delete
@@ -766,6 +781,20 @@ window.onclick = function(event) {
 /**
  * Toggle comments visibility for a question
  */
+/**
+ * Toggle question expand/collapse
+ */
+window.toggleQuestionExpand = function(questionId) {
+    const questionItem = document.querySelector(`.question-item[data-question-id="${questionId}"]`);
+    const expandIcon = document.getElementById(`expand-icon-${questionId}`);
+    const detailsSection = document.getElementById(`question-details-${questionId}`);
+
+    if (questionItem && expandIcon && detailsSection) {
+        questionItem.classList.toggle('collapsed');
+        expandIcon.textContent = questionItem.classList.contains('collapsed') ? '▶' : '▼';
+    }
+};
+
 window.toggleQuestionComments = function(questionId) {
     const commentsList = document.getElementById(`comments-list-${questionId}`);
     const toggleIcon = document.getElementById(`toggle-icon-${questionId}`);
@@ -775,6 +804,56 @@ window.toggleQuestionComments = function(questionId) {
         toggleIcon.classList.toggle('expanded');
         toggleIcon.textContent = commentsList.classList.contains('show') ? '▼' : '▶';
     }
+};
+
+/**
+ * Navigate to a specific question in the Questions tab
+ */
+window.goToQuestion = function(questionHashId) {
+    // Switch to Questions tab
+    switchTab('questions');
+
+    // Wait a bit for the tab to render, then find and expand the question
+    setTimeout(() => {
+        // The questionHashId is a hash, so we need to find the actual question by matching
+        // Find the question that has this hash ID
+        let foundQuestion = null;
+        let foundQuestionElement = null;
+
+        // Loop through all questions to find one with matching hash
+        for (const question of allQuestions) {
+            const questionHash = generateQuestionId(question);
+            if (questionHash === questionHashId) {
+                foundQuestion = question;
+                foundQuestionElement = document.querySelector(`.question-item[data-question-id="${question.id}"]`);
+                break;
+            }
+        }
+
+        if (foundQuestionElement && foundQuestion) {
+            // Scroll to the question
+            foundQuestionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Expand the question if it's collapsed
+            if (foundQuestionElement.classList.contains('collapsed')) {
+                const expandIcon = document.getElementById(`expand-icon-${foundQuestion.id}`);
+                if (expandIcon) {
+                    foundQuestionElement.classList.remove('collapsed');
+                    expandIcon.textContent = '▼';
+                }
+            }
+
+            // Add a highlight effect
+            foundQuestionElement.style.transition = 'background-color 0.3s ease';
+            foundQuestionElement.style.backgroundColor = 'var(--color-info-bg)';
+
+            setTimeout(() => {
+                foundQuestionElement.style.backgroundColor = '';
+            }, 2000);
+        } else {
+            alert('Question not found. It may have been deleted or the ID is incorrect.');
+        }
+    }, 300);
 };
 
 /**
@@ -830,6 +909,37 @@ function applySortToQuestions(questions) {
     const sorted = [...questions]; // Create a copy
 
     switch(currentSortMethod) {
+        case 'most-voted':
+            // Sort by highest vote count on comments (descending)
+            sorted.sort((a, b) => {
+                const hashIdA = generateQuestionId(a);
+                const hashIdB = generateQuestionId(b);
+                const commentsA = commentsByQuestion[hashIdA] || [];
+                const commentsB = commentsByQuestion[hashIdB] || [];
+
+                if (commentsA.length === 0 && commentsB.length === 0) return 0;
+                if (commentsA.length === 0) return 1; // No comments go to end
+                if (commentsB.length === 0) return -1;
+
+                // Get highest vote count for each question
+                const maxVotesA = commentsA.reduce((max, comment) => {
+                    const upvotes = comment.upvotes || 0;
+                    const downvotes = comment.downvotes || 0;
+                    const netVotes = upvotes - downvotes;
+                    return Math.max(max, netVotes);
+                }, 0);
+
+                const maxVotesB = commentsB.reduce((max, comment) => {
+                    const upvotes = comment.upvotes || 0;
+                    const downvotes = comment.downvotes || 0;
+                    const netVotes = upvotes - downvotes;
+                    return Math.max(max, netVotes);
+                }, 0);
+
+                return maxVotesB - maxVotesA; // Highest votes first
+            });
+            break;
+
         case 'latest-comments':
             // Sort by most recent comment date
             sorted.sort((a, b) => {

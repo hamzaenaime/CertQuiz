@@ -26,10 +26,6 @@ const topicSelectionContainer = document.getElementById('topic-selection-contain
 const topicArchitectBtn = document.getElementById('topic-architect');
 const topicCloudBtn = document.getElementById('topic-cloud');
 const topicIntegrationBtn = document.getElementById('topic-integration');
-const integrationTypeContainer = document.getElementById('integration-type-container');
-const integrationMockBtn = document.getElementById('integration-mock');
-const integrationRealBtn = document.getElementById('integration-real');
-const backToTopicsBtn = document.getElementById('back-to-topics');
 const setupContainer = document.getElementById('setup-container');
 const questionCountInput = document.getElementById('question-count');
 const questionCountValue = document.getElementById('question-count-value');
@@ -64,7 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function setupTopicSelection() {
     // Show topic selection, hide others
     if (topicSelectionContainer) topicSelectionContainer.style.display = 'block';
-    if (integrationTypeContainer) integrationTypeContainer.style.display = 'none';
     if (setupContainer) setupContainer.style.display = 'none';
     if (quizContainer) quizContainer.style.display = 'none';
     if (resultsContainer) resultsContainer.style.display = 'none';
@@ -86,43 +81,11 @@ function setupTopicSelection() {
     if (topicIntegrationBtn) {
         topicIntegrationBtn.addEventListener('click', function() {
             selectedTopic = 'integration';
-            showIntegrationTypeSelection();
+            loadQuizData('integration');
         });
     }
 }
 
-/**
- * Show the integration type selection screen
- */
-function showIntegrationTypeSelection() {
-    // Hide topic selection, show integration type selection
-    if (topicSelectionContainer) topicSelectionContainer.style.display = 'none';
-    if (integrationTypeContainer) {
-        integrationTypeContainer.style.display = 'block';
-        integrationTypeContainer.classList.add('fade-in');
-    }
-    
-    // Add event listeners for integration type buttons
-    if (integrationMockBtn) {
-        integrationMockBtn.addEventListener('click', function() {
-            selectedTopic = 'integration-mock';
-            loadQuizData('integration-mock');
-        });
-    }
-    if (integrationRealBtn) {
-        integrationRealBtn.addEventListener('click', function() {
-            selectedTopic = 'integration-real';
-            loadQuizData('integration-real');
-        });
-    }
-    if (backToTopicsBtn) {
-        backToTopicsBtn.addEventListener('click', function() {
-            integrationTypeContainer.style.display = 'none';
-            topicSelectionContainer.style.display = 'block';
-            topicSelectionContainer.classList.add('fade-in');
-        });
-    }
-}
 
 /**
  * Dynamically import the selected quiz data file or load from Firebase
@@ -130,18 +93,14 @@ function showIntegrationTypeSelection() {
 async function loadQuizData(topic) {
     // Show loading state if needed
     if (topicSelectionContainer) topicSelectionContainer.style.display = 'none';
-    if (integrationTypeContainer) integrationTypeContainer.style.display = 'none';
     if (setupContainer) setupContainer.style.display = 'block';
     setupContainer.classList.add('fade-in');
 
     // Update quiz title for setup screen
     updateQuizTitle(topic);
 
-    // Normalize topic name for Firebase (remove -mock/-real suffix)
+    // Use topic as-is for Firebase
     let firebaseTopic = topic;
-    if (topic === 'integration-mock' || topic === 'integration-real') {
-        firebaseTopic = 'integration';
-    }
 
     // Try to load from Firebase first
     if (db && useFirebase) {
@@ -186,10 +145,8 @@ async function loadQuizData(topic) {
         importPromise = import('../data/quiz-data.js');
     } else if (topic === 'cloud') {
         importPromise = import('../data/quiz-data-cloud.js');
-    } else if (topic === 'integration-mock') {
+    } else if (topic === 'integration') {
         importPromise = import('../data/quiz-integration.js');
-    } else if (topic === 'integration-real') {
-        importPromise = import('../data/quiz-integration-real.js');
     }
 
     importPromise.then(module => {
@@ -245,10 +202,8 @@ function updateQuizTitle(topic) {
         title = 'Salesforce <span>Data Architect</span> Quiz';
     } else if (currentTopic === 'cloud') {
         title = 'Salesforce <span>Data Cloud</span> Quiz';
-    } else if (currentTopic === 'integration' || currentTopic === 'integration-mock') {
-        title = 'Salesforce <span>Integration Mock Test</span> Quiz';
-    } else if (currentTopic === 'integration-real') {
-        title = 'Salesforce <span>Integration Real Test</span> Quiz';
+    } else if (currentTopic === 'integration') {
+        title = 'Salesforce <span>Integration</span> Quiz';
     }
     quizTitleEls.forEach(el => {
         el.innerHTML = title;
