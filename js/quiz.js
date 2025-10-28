@@ -18,7 +18,7 @@ let timer;
 let timeLeft = 0; // Will be set based on number of questions
 let questionCount = 15; // Default question count
 let selectedQuizData = null; // Will hold the loaded quiz data
-let selectedTopic = null; // 'architect', 'cloud', or 'integration'
+let selectedTopic = null; // 'architect', 'cloud', 'integration', or 'lifecycle'
 let useFirebase = true; // Flag to use Firebase or local data
 
 // DOM elements
@@ -26,6 +26,7 @@ const topicSelectionContainer = document.getElementById('topic-selection-contain
 const topicArchitectBtn = document.getElementById('topic-architect');
 const topicCloudBtn = document.getElementById('topic-cloud');
 const topicIntegrationBtn = document.getElementById('topic-integration');
+const topicLifecycleBtn = document.getElementById('topic-lifecycle');
 const setupContainer = document.getElementById('setup-container');
 const questionCountInput = document.getElementById('question-count');
 const questionCountValue = document.getElementById('question-count-value');
@@ -82,6 +83,12 @@ function setupTopicSelection() {
         topicIntegrationBtn.addEventListener('click', function() {
             selectedTopic = 'integration';
             loadQuizData('integration');
+        });
+    }
+    if (topicLifecycleBtn) {
+        topicLifecycleBtn.addEventListener('click', function() {
+            selectedTopic = 'lifecycle';
+            loadQuizData('lifecycle');
         });
     }
 }
@@ -147,6 +154,8 @@ async function loadQuizData(topic) {
         importPromise = import('../data/quiz-data-cloud.js');
     } else if (topic === 'integration') {
         importPromise = import('../data/quiz-integration.js');
+    } else if (topic === 'lifecycle') {
+        importPromise = import('../data/quiz-development-lifecycle-and-deployment.js');
     }
 
     importPromise.then(module => {
@@ -204,6 +213,8 @@ function updateQuizTitle(topic) {
         title = 'Salesforce <span>Data Cloud</span> Quiz';
     } else if (currentTopic === 'integration') {
         title = 'Salesforce <span>Integration</span> Quiz';
+    } else if (currentTopic === 'lifecycle') {
+        title = 'Salesforce <span>Development Lifecycle & Deployment</span> Quiz';
     }
     quizTitleEls.forEach(el => {
         el.innerHTML = title;
