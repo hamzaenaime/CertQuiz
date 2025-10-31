@@ -351,8 +351,8 @@ function loadQuestion() {
         // Clear previous answers
         answersEl.innerHTML = '';
         
-        // Shuffle answer keys for randomized option order
-        const answerKeys = shuffleArray(Object.keys(currentQuestionData.answers));
+        // Sort answer keys to keep them in order (A, B, C, D, E)
+        const answerKeys = Object.keys(currentQuestionData.answers).sort();
         const inputType = currentQuestionData.multiSelect ? 'checkbox' : 'radio';
         
         // Create answer elements
